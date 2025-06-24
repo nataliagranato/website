@@ -251,7 +251,7 @@ sandbox image by setting the following config:
 
 ```toml
 [plugins."io.containerd.grpc.v1.cri"]
-  sandbox_image = "registry.k8s.io/pause:3.2"
+  sandbox_image = "registry.k8s.io/pause:3.10"
 ```
 
 You might need to restart `containerd` as well once you've updated the config file: `systemctl restart containerd`.
@@ -293,7 +293,7 @@ config value:
 
 ```toml
 [crio.image]
-pause_image="registry.k8s.io/pause:3.6"
+pause_image="registry.k8s.io/pause:3.10"
 ```
 
 This config option supports live configuration reload to apply this change: `systemctl reload crio` or by sending
@@ -316,14 +316,14 @@ For `cri-dockerd`, the CRI socket is `/run/cri-dockerd.sock` by default.
 
 ### Mirantis Container Runtime {#mcr}
 
-[Mirantis Container Runtime](https://docs.mirantis.com/mcr/20.10/overview.html) (MCR) is a commercially
+[Mirantis Container Runtime](https://docs.mirantis.com/mcr/25.0/overview.html) (MCR) is a commercially
 available container runtime that was formerly known as Docker Enterprise Edition.
 
 You can use Mirantis Container Runtime with Kubernetes using the open source
 [`cri-dockerd`](https://mirantis.github.io/cri-dockerd/) component, included with MCR.
 
 To learn more about how to install Mirantis Container Runtime,
-visit [MCR Deployment Guide](https://docs.mirantis.com/mcr/20.10/install.html).
+visit [MCR Deployment Guide](https://docs.mirantis.com/mcr/25.0/install.html).
 
 Check the systemd unit named `cri-docker.socket` to find out the path to the CRI
 socket.
