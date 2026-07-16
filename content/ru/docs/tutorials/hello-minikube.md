@@ -2,12 +2,6 @@
 title: Привет, Minikube
 content_type: tutorial
 weight: 5
-menu:
-  main:
-    title: "Начало"
-    weight: 10
-    post: >
-      <p>Готовы приступить к делу? Создайте простой кластер Kubernetes и запустите в нём тестовое приложение.</p>
 card:
   name: tutorials
   weight: 10
@@ -97,7 +91,7 @@ minikube dashboard --url
 
     ```shell
     # Запуск тестового образа контейнера с веб-сервером
-    kubectl create deployment hello-node --image=registry.k8s.io/e2e-test-images/agnhost:2.39 -- /agnhost netexec --http-port=8080
+    kubectl create deployment hello-node --image=registry.k8s.io/e2e-test-images/agnhost:2.53 -- /agnhost netexec --http-port=8080
     ```
 
 1. Посмотреть информацию о Deployment:

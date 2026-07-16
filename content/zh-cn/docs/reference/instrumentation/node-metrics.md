@@ -22,7 +22,7 @@ and emits this information in the
 -->
 [kubelet](/zh-cn/docs/reference/command-line-tools-reference/kubelet/)
 在节点、卷、Pod 和容器级别收集统计信息，
-并在[概要 API](zh-cn/docs/reference/config-api/kubelet-stats.v1alpha1/)
+并在 [Summary API](zh-cn/docs/reference/config-api/kubelet-stats.v1alpha1/)
 中输出这些信息。
 
 <!--
@@ -31,9 +31,9 @@ Kubernetes API server.
 
 Here is an example of a Summary API request for a node named `minikube`:
 -->
-你可以通过 Kubernetes API 服务器将代理的请求发送到 stats 概要 API。
+你可以通过 Kubernetes API 服务器将代理的请求发送到 stats Summary API。
 
-下面是一个名为 `minikube` 的节点的概要 API 请求示例：
+下面是一个名为 `minikube` 的节点的 Summary API 请求示例：
 
 ```shell
 kubectl get --raw "/api/v1/nodes/minikube/proxy/stats/summary"
@@ -69,45 +69,53 @@ kubelet 端点，不查询 `/stats/summary`。
 ## Summary metrics API source {#summary-api-source}
 
 By default, Kubernetes fetches node summary metrics data using an embedded
-[cAdvisor](https://github.com/google/cadvisor) that runs within the kubelet. If you 
-enable the `PodAndContainerStatsFromCRI` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/) 
+[cAdvisor](https://github.com/google/cadvisor) that runs within the kubelet. If you
+enable the `PodAndContainerStatsFromCRI` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)
 in your cluster, and you use a container runtime that supports statistics access via
 {{< glossary_tooltip term_id="cri" text="Container Runtime Interface">}} (CRI), then
 the kubelet [fetches Pod- and container-level metric data using CRI](/docs/reference/instrumentation/cri-pod-container-metrics), and not via cAdvisor.
 -->
 ## 概要指标 API 源  {#summary-api-source}
 
-默认情况下，Kubernetes 使用 kubelet 内运行的嵌入式 [cAdvisor](https://github.com/google/cadvisor)
+默认情况下，Kubernetes 使用 kubelet 内运行的嵌入式
+[cAdvisor](https://github.com/google/cadvisor)
 获取节点概要指标数据。如果你在自己的集群中启用 `PodAndContainerStatsFromCRI`
 [特性门控](/zh-cn/docs/reference/command-line-tools-reference/feature-gates/)，
-且你通过{{< glossary_tooltip term_id="cri" text="容器运行时接口">}}（CRI）使用支持统计访问的容器运行时，
-则 kubelet [将使用 CRI 来获取 Pod 和容器级别的指标数据](/zh-cn/docs/reference/instrumentation/cri-pod-container-metrics)，
+且你通过{{< glossary_tooltip term_id="cri" text="容器运行时接口">}}（CRI）
+使用支持统计访问的容器运行时，则 kubelet
+[将使用 CRI 来获取 Pod 和容器级别的指标数据](/zh-cn/docs/reference/instrumentation/cri-pod-container-metrics)，
 而不是 cAdvisor 来获取。
 
 <!--
 ## Pressure Stall Information (PSI) {#psi}
 -->
-## 压力停滞信息（PSI）
+## 压力停滞信息（PSI）  {#psi}
 
-{{< feature-state for_k8s_version="v1.33" state="alpha" >}}
+{{< feature-state feature_gate_name="KubeletPSI" >}}
 
 <!--
-As an alpha feature, Kubernetes lets you configure kubelet to collect Linux kernel
+As a stable feature, Kubernetes lets you configure kubelet to collect Linux kernel
 [Pressure Stall Information](https://docs.kernel.org/accounting/psi.html)
-(PSI) for CPU, memory and IO usage. The information is collected at node, pod and container level.
+(PSI) for CPU, memory and I/O usage. The information is collected at node, pod and container level.
 See [Summary API](/docs/reference/config-api/kubelet-stats.v1alpha1/) for detailed schema.
-You must enable the `KubeletPSI` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)
-to use this feature. The information is also exposed in
+Starting with Kubernetes v.1.36, the `KubeletPSI` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/) is locked to true and cannot be disabled. The information is also exposed in
 [Prometheus metrics](/docs/concepts/cluster-administration/system-metrics#psi-metrics).
 -->
-作为 Alpha 级别特性，Kubernetes 允许你配置 kubelet 来收集 Linux
-内核的[压力停滞信息](https://docs.kernel.org/accounting/psi.html)（PSI）
-的 CPU、内存和 IO 使用情况。这些信息是在节点、Pod 和容器级别上收集的。
+作为稳定特性，Kubernetes 允许你配置 kubelet 来收集 Linux
+内核的[压力停滞信息](https://docs.kernel.org/accounting/psi.html)（PSI）的
+CPU、内存和 I/O 使用情况。这些信息是在节点、Pod 和容器级别上收集的。
 详细模式请参见 [Summary API](/zh-cn/docs/reference/config-api/kubelet-stats.v1alpha1/)。
-你必须启用 `KubeletPSI`
-[特性门控](/zh-cn/docs/reference/command-line-tools-reference/feature-gates/)才能使用此特性。
+从 Kubernetes v1.36 开始，`KubeletPSI`
+[特性门控](/zh-cn/docs/reference/command-line-tools-reference/feature-gates/)被锁定为
+true，无法被禁用。
 这些信息也在
 [Prometheus 指标](/zh-cn/docs/concepts/cluster-administration/system-metrics#psi-metrics)中暴露。
+
+<!--
+You can learn how to interpret the PSI metrics in [Understand PSI Metrics](/docs/reference/instrumentation/understand-psi-metrics/).
+-->
+参见[了解 PSI 指标](/zh-cn/docs/reference/instrumentation/understand-psi-metrics/)，
+学习如何解读 PSI 指标。
 
 <!--
 ### Requirements

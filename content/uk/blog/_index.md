@@ -3,10 +3,7 @@ title: Блог Kubernetes
 linkTitle: Блог
 menu:
   main:
-    title: "Блог"
-    weight: 40
-    post: >
-       <p>Читайте останні новини щодо Kubernetes та контейнеризацію загалом, а також отримуйте технічні інструкції, які щойно виходять з друку.</p>
+    weight: 20
 ---
 {{< comment >}}
 

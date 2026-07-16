@@ -44,6 +44,14 @@ A policy is generally made up of three resources:
 At least a `ValidatingAdmissionPolicy` and a corresponding  `ValidatingAdmissionPolicyBinding`
 must be defined for a policy to have an effect.
 
+{{< note >}}
+Names ending in `.static.k8s.io` are reserved for
+[manifest-based admission control](/docs/reference/access-authn-authz/manifest-admission-control/)
+and cannot be used for API-based policies or bindings. This reservation is
+enforced when the `ManifestBasedAdmissionControlConfig`
+[feature gate](/docs/reference/command-line-tools-reference/feature-gates/#ManifestBasedAdmissionControlConfig) is enabled.
+{{< /note >}}
+
 If a `ValidatingAdmissionPolicy` does not need to be configured via parameters, simply leave
 `spec.paramKind` in  `ValidatingAdmissionPolicy` not specified.
 
@@ -181,7 +189,7 @@ not been bound, so for policies requiring a parameter resource, it can be useful
 ensure one has been bound. A parameter resource will not be bound and `params` will be null
 if `paramKind` of the policy, or `paramRef` of the binding are not specified.
 
-For the use cases require parameter configuration, we recommend to add a param check in
+For the use cases requiring parameter configuration, we recommend to add a param check in
 `spec.validations[0].expression`:
 
 ```
@@ -192,7 +200,8 @@ For the use cases require parameter configuration, we recommend to add a param c
 #### Optional parameters
 
 It can be convenient to be able to have optional parameters as part of a parameter resource, and
-only validate them if present. CEL provides `has()`, which checks if the key passed to it exists.
+only validate them if present. CEL provides the `has()` macro, which checks whether a field
+is present before a CEL expression accesses the field's value.
 CEL also implements Boolean short-circuiting. If the first half of a logical OR evaluates to true,
 it won’t evaluate the other half (since the result of the entire OR will be true regardless). 
 
@@ -200,7 +209,7 @@ Combining the two, we can provide a way to validate optional parameters:
 
 `!has(params.optionalNumber) || (params.optionalNumber >= 5 && params.optionalNumber <= 10)`
 
-Here, we first check that the optional parameter is present with `!has(params.optionalNumber)`. 
+Here, we first check whether the optional parameter is absent with `!has(params.optionalNumber)`.
 
 - If `optionalNumber` hasn’t been defined, then the expression short-circuits since
   `!has(params.optionalNumber)` will evaluate to true. 
@@ -208,6 +217,13 @@ Here, we first check that the optional parameter is present with `!has(params.op
   evaluated, and optionalNumber will be checked to ensure that it contains a value between 5 and
   10 inclusive.
 
+Use `has()` to check field presence. To check whether a map contains a key, use the `in`
+operator instead. For example,
+`has(object.metadata.labels) && 'example.com/environment' in object.metadata.labels` checks that
+the `metadata.labels` field is present and that the map contains the `example.com/environment` key.
+For multi-level optional field access, prefer CEL optional syntax (Kubernetes 1.29+):
+`object.?metadata.labels['example.com/block'].orValue('')` safely traverses absent intermediate
+fields and returns the given default value.
 
 #### Per-namespace Parameters
 
@@ -330,9 +346,12 @@ variables as well as some other useful variables:
 - `authorizer.requestResource` - A shortcut for an authorization check configured with the request
   resource (group, resource, (subresource), namespace, name).
 	
-The `apiVersion`, `kind`, `metadata.name` and `metadata.generateName` are always accessible from
-the root of the object. No other metadata properties are accessible.
-	
+In CEL expressions, variables like `object` and `oldObject` are strongly-typed.
+You can access any field in the object's schema, such as `object.metadata.labels` and fields in `spec`.
+
+For any Kubernetes object, including schemaless Custom Resources, CEL guarantees access to a minimal set of properties:
+`apiVersion`, `kind`, `metadata.name`, and `metadata.generateName`.
+
 Equality on arrays with list type of 'set' or 'map' ignores element order, i.e. [1, 2] == [2, 1].
 Concatenation on arrays with x-kubernetes-list-type use the semantics of the list type:
 
@@ -349,7 +368,7 @@ Concatenation on arrays with x-kubernetes-list-type use the semantics of the lis
 | `object.minReplicas <= object.replicas && object.replicas <= object.maxReplicas`             | Validate that the three fields defining replicas are ordered appropriately        |
 | `'Available' in object.stateCounts`                                                          | Validate that an entry with the 'Available' key exists in a map                   |
 | `(size(object.list1) == 0) != (size(object.list2) == 0)`                                     | Validate that one of two lists is non-empty, but not both                         |
-| <code>!('MY_KEY' in object.map1) &#124;&#124; object['MY_KEY'].matches('^[a-zA-Z]*$')</code> | Validate the value of a map for a specific key, if it is in the map               |
+| <code>!('MY_KEY' in object.map1) &#124;&#124; object.map1['MY_KEY'].matches('^[a-zA-Z]*$')</code> | Validate the value of a map for a specific key, if it is in the map        |
 | `object.envars.filter(e, e.name == 'MY_ENV').all(e, e.value.matches('^[a-zA-Z]*$')`          | Validate the 'value' field of a listMap entry where key field 'name' is 'MY_ENV'  |
 | `has(object.expired) && object.created + object.ttl < object.expired`                        | Validate that 'expired' date is after a 'create' date plus a 'ttl' duration       |
 | `object.health.startsWith('ok')`                                                             | Validate a 'health' string field has the prefix 'ok'                              |
@@ -551,13 +570,24 @@ error: failed to create deployment: deployments.apps "invalid" is forbidden: Val
 
 There are certain API kinds that are exempt from admission-time validation checks. For example, you can't create a ValidatingAdmissionPolicy that prevents changes to ValidatingAdmissionPolicyBindings.
 
+{{< note >}}
+When configured via
+[manifest-based admission control](/docs/reference/access-authn-authz/manifest-admission-control/),
+a ValidatingAdmissionPolicy can intercept all resource types listed below.
+This bypasses the restrictions usually applied to policies created via the REST
+API, allowing you to validate even admission configuration and
+security-sensitive resources. Unlike the REST API, a bad manifest-based
+admission policy intercepting these resources would not be unrecoverable since
+it is defined on disk rather than through the API.
+{{< /note >}}
+
 The list of exempt API kinds is:
 
-* [ValidatingAdmissionPolicies]({{< relref "/docs/reference/kubernetes-api/policy-resources/validating-admission-policy-v1/" >}})
-* [ValidatingAdmissionPolicyBindings]({{< relref "/docs/reference/kubernetes-api/policy-resources/validating-admission-policy-binding-v1/" >}})
+* [ValidatingAdmissionPolicies]({{< relref "/docs/reference/kubernetes-api/admissionregistration/validating-admission-policy-v1/" >}})
+* [ValidatingAdmissionPolicyBindings]({{< relref "/docs/reference/kubernetes-api/admissionregistration/validating-admission-policy-binding-v1/" >}})
 * MutatingAdmissionPolicies
 * MutatingAdmissionPolicyBindings
-* [TokenReviews]({{< relref "/docs/reference/kubernetes-api/authentication-resources/token-review-v1/" >}})
-* [LocalSubjectAccessReviews]({{< relref "/docs/reference/kubernetes-api/authorization-resources/local-subject-access-review-v1/" >}})
-* [SelfSubjectAccessReviews]({{< relref "/docs/reference/kubernetes-api/authorization-resources/self-subject-access-review-v1/" >}})
-* [SelfSubjectReviews]({{< relref "/docs/reference/kubernetes-api/authentication-resources/self-subject-review-v1/" >}})
+* [TokenReviews]({{< relref "/docs/reference/kubernetes-api/definitions/token-review-v1-authentication/" >}})
+* [LocalSubjectAccessReviews]({{< relref "/docs/reference/kubernetes-api/definitions/local-subject-access-review-v1-authorization/" >}})
+* [SelfSubjectAccessReviews]({{< relref "/docs/reference/kubernetes-api/definitions/self-subject-access-review-v1-authorization/" >}})
+* [SelfSubjectReviews]({{< relref "/docs/reference/kubernetes-api/definitions/self-subject-review-v1-authentication/" >}})

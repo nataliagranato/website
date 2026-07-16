@@ -273,8 +273,8 @@ The following policy options exist for the static `CPUManager` policy:
 * `distribute-cpus-across-numa` (beta, visible by default) (1.33 or higher)
 * `align-by-socket` (alpha, hidden by default) (1.25 or higher)
 * `distribute-cpus-across-cores` (alpha, hidden by default) (1.31 or higher)
-* `strict-cpu-reservation` (beta, visible by default) (1.32 or higher)
-* `prefer-align-cpus-by-uncorecache` (alpha, hidden by default) (1.32 or higher)
+* `strict-cpu-reservation` (GA, visible by default) (1.35 or higher)
+* `prefer-align-cpus-by-uncorecache` (GA, visible by default) (1.36 or higher)
 -->
 ### Static 策略选项  {#cpu-policy-static--options}
 
@@ -288,8 +288,8 @@ The following policy options exist for the static `CPUManager` policy:
 * `distribute-cpus-across-numa`（Beta，默认可见）（1.33 或更高版本）
 * `align-by-socket`（Alpha，默认隐藏）（1.25 或更高版本）
 * `distribute-cpus-across-cores` (Alpha，默认隐藏) (1.31 或更高版本)
-* `strict-cpu-reservation` (Beta，默认可见) (1.32 或更高版本)
-* `prefer-align-cpus-by-uncorecache` (Alpha, 默认隐藏) (1.32 或更高版本)
+* `strict-cpu-reservation` (GA，默认可见) (1.35 或更高版本)
+* `prefer-align-cpus-by-uncorecache` (GA, 默认可见) (1.36 或更高版本)
 
 <!--
 The `full-pcpus-only` option can be enabled by adding `full-pcpus-only=true` to
@@ -340,3 +340,12 @@ For mode detail about the behavior of the individual options you can configure, 
 如果使用不兼容的选项，kubelet 将无法启动，并在日志中解释所出现的错误。
 
 有关你可以配置的各个选项的行为的模式详细信息，请参阅[节点资源管理](/zh-cn/docs/concepts/policy/node-resource-managers)文档。
+
+<!--
+## {{% heading "whatsnext" %}}
+
+* Read about [Pod-level resource managers](/docs/concepts/workloads/resource-managers/#pod-level-resource-managers).
+-->
+## {{% heading "whatsnext" %}}
+
+* 阅读 [Pod 级别资源管理器](/zh-cn/docs/concepts/workloads/resource-managers/#pod-level-resource-managers)。

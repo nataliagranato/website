@@ -38,6 +38,15 @@ Read [coordinated leader election](/docs/concepts/cluster-administration/coordin
 to learn about how Kubernetes builds on the Lease API to select which component instance
 acts as leader.
 
+### Kube controller manager lock release on exit
+
+{{< feature-state feature_gate_name="ControllerManagerReleaseLeaderElectionLockOnExit" >}}
+
+When the `ControllerManagerReleaseLeaderElectionLockOnExit` feature gate is enabled,
+the `kube-controller-manager` actively releases its leader election lock during
+leader transitions, rather than waiting for the lock's TTL to expire. This allows
+a new leader to be elected more quickly, reducing leader transition latency.
+
 ## API server identity
 
 {{< feature-state feature_gate_name="APIServerIdentity" >}}
@@ -65,7 +74,7 @@ apiserver-1dfef752bcb36637d2763d1868        apiserver-1dfef752bcb36637d2763d1868
 The SHA256 hash used in the lease name is based on the OS hostname as seen by that API server. Each kube-apiserver should be
 configured to use a hostname that is unique within the cluster. New instances of kube-apiserver that use the same hostname
 will take over existing Leases using a new holder identity, as opposed to instantiating new Lease objects. You can check the
-hostname used by kube-apisever by checking the value of the `kubernetes.io/hostname` label:
+hostname used by kube-apiserver by checking the value of the `kubernetes.io/hostname` label:
 
 ```shell
 kubectl -n kube-system get lease apiserver-07a5ea9b9b072c4a5f3d1c3702 -o yaml

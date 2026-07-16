@@ -7,6 +7,18 @@ weight: 10
 
 * Ręczne skalowanie istniejącej aplikacji za pomocą narzędzia kubectl.
 
+## {{% heading "prerequisites" %}}
+
+Polecenia w tym poradniku są napisane w składni zgodnej ze standardem POSIX, którą
+obsługują domyślne powłoki w Linuxie i macOS (np. bash, zsh, sh). Jeśli
+używasz Windowsa, potrzebujesz powłoki zgodnej z POSIX, np. WSL
+[Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install) lub
+[Git Bash](https://gitforwindows.org/), żeby
+uruchomić je w takiej formie. Polecenia z `export`, `$()` i podobnymi
+elementami **nie** zadziałają w PowerShellu ani w zwykłym wierszu polecenia.
+
+
+
 ## Skalowanie aplikacji {#scaling-an-application}
 
 {{% alert %}}
@@ -44,18 +56,14 @@ kubectl expose deployment/kubernetes-bootcamp --type="LoadBalancer" --port 8080
 ## Ogólnie o skalowaniu {#scaling-overview}
 
 <!-- animation -->
-<div class="col-md-8">
-  <div id="myCarousel" class="carousel" data-ride="carousel" data-interval="3000">
-    <div class="carousel-inner" role="listbox">
-      <div class="item carousel-item active">
-        <img src="/docs/tutorials/kubernetes-basics/public/images/module_05_scaling1.svg">
-      </div>
-      <div class="item carousel-item">
-        <img src="/docs/tutorials/kubernetes-basics/public/images/module_05_scaling2.svg">
-      </div>
-    </div>
-  </div>
-</div>
+{{< tutorials/carousel id="myCarousel" interval="3000" >}}
+  {{< tutorials/carousel-item
+      image="/docs/tutorials/kubernetes-basics/public/images/module_05_scaling1.svg"
+      active="true" >}}
+
+  {{< tutorials/carousel-item
+      image="/docs/tutorials/kubernetes-basics/public/images/module_05_scaling2.svg" >}}
+{{< /tutorials/carousel >}}
 
 {{% alert %}}
 _Skalowanie polega na zmianie liczby replik w ramach Deploymentu._
@@ -63,7 +71,7 @@ _Skalowanie polega na zmianie liczby replik w ramach Deploymentu._
 
 Kiedy zwiększamy skalę Deploymentu, uruchomienie nowych Podów jest zlecane na Węzłach, które
 posiadają odpowiednio dużo zasobów. Operacja skalowania zwiększy liczbę Podów do oczekiwanej
-wartości. W Kubernetesie możliwe jest również [autoskalowanie](/docs/tasks/run-application/horizontal-pod-autoscale/)
+wartości. W Kubernetesie możliwe jest również [autoskalowanie](/docs/concepts/workloads/autoscaling/)
 Podów, ale jest ono poza zakresem niniejszego samouczka. Istnieje także możliwość
 skalowania do zera - w ten sposób zatrzymane zostaną wszystkie Pody należące do konkretnego Deploymentu.
 
@@ -113,9 +121,10 @@ Dwie istotne kolumny tego wyniku to:
 
 * _DESIRED_ pokazuje żądaną liczbę replik aplikacji, którą
   określasz podczas tworzenia Deploymentu. Jest to pożądany stan.
-* _CURRENT_ pokazuje, ile replik obecnie działa. Następnie
-  skalujemy Deployment do 4 replik. Użyjemy polecenia `kubectl scale`,
-  po którym podajemy typ Deployment, nazwę i pożądaną liczbę instancji:
+* _CURRENT_ pokazuje, ile replik obecnie działa.
+
+Następnie skalujemy Deployment do 4 replik. Użyjemy polecenia
+`kubectl scale`, po którym podajemy typ Deployment, nazwę i pożądaną liczbę instancji:
 
 ```shell
 kubectl scale deployments/kubernetes-bootcamp --replicas=4

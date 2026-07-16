@@ -216,10 +216,11 @@ rules:
 ```
 
 {{< note >}}
-You cannot restrict `create` or `deletecollection` requests by their resource name.
-For `create`, this limitation is because the name of the new object may not be known at authorization time.
-If you restrict `list` or `watch` by resourceName, clients must include a `metadata.name` field selector in their `list` or `watch` request that matches the specified resourceName in order to be authorized.
-For example, `kubectl get configmaps --field-selector=metadata.name=my-configmap`
+You cannot restrict **deletecollection** or top-level **create** requests by resource name.
+For **create**, this limitation is because the name of the new object may not be known at authorization time. However, the **create** limitation applies only to top-level resources, not subresources. For example, you can use the `resourceNames` field with `pods/exec`.
+If you restrict **list** or **watch** by `resourceName`, clients must include a `metadata.name` field selector in their **list** or **watch** request (that matches the specified `resourceName`)
+in order to be authorized.
+For example: `kubectl get configmaps --field-selector=metadata.name=my-configmap`
 {{< /note >}}
 
 Rather than referring to individual `resources`, `apiGroups`, and `verbs`,
@@ -265,6 +266,14 @@ field of this one.
 The control plane overwrites any values that you manually specify in the `rules` field of an
 aggregate ClusterRole. If you want to change or add rules, do so in the `ClusterRole` objects
 that are selected by the `aggregationRule`.
+
+Omit the `rules` field from manifests for aggregated ClusterRoles. Setting it, even to an
+empty list, claims ownership of the field when the manifest is applied with
+[server-side apply](/docs/reference/using-api/server-side-apply/). That ownership causes
+conflicts between the applier and the control plane: subsequent applies either fail with a
+field manager conflict on `.rules`, or (if conflicts are forced, as GitOps controllers
+typically do) repeatedly clear the aggregated rules, which the control plane then fills in
+again.
 {{< /caution >}}
 
 Here is an example aggregated ClusterRole:
@@ -278,7 +287,7 @@ aggregationRule:
   clusterRoleSelectors:
   - matchLabels:
       rbac.example.com/aggregate-to-monitoring: "true"
-rules: [] # The control plane automatically fills in the rules
+# The control plane automatically fills in the rules
 ```
 
 If you create a new ClusterRole that matches the label selector of an existing aggregated ClusterRole,
@@ -290,14 +299,17 @@ ClusterRole labeled `rbac.example.com/aggregate-to-monitoring: true`.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: monitoring-endpoints
+  name: monitoring-endpointslices
   labels:
     rbac.example.com/aggregate-to-monitoring: "true"
-# When you create the "monitoring-endpoints" ClusterRole,
+# When you create the "monitoring-endpointslices" ClusterRole,
 # the rules below will be added to the "monitoring" ClusterRole.
 rules:
 - apiGroups: [""]
-  resources: ["services", "endpointslices", "pods"]
+  resources: ["services", "pods"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["discovery.k8s.io"]
+  resources: ["endpointslices"]
   verbs: ["get", "list", "watch"]
 ```
 
@@ -788,7 +800,7 @@ This is commonly used by add-on API servers for unified authentication and autho
 <tr>
 <td><b>system:monitoring</b></td>
 <td><b>system:monitoring</b> group</td>
-<td>Allows read access to control-plane monitoring endpoints (i.e. {{< glossary_tooltip term_id="kube-apiserver" text="kube-apiserver" >}} liveness and readiness endpoints (<tt>/healthz</tt>, <tt>/livez</tt>, <tt>/readyz</tt>), the individual health-check endpoints (<tt>/healthz/*</tt>, <tt>/livez/*</tt>, <tt>/readyz/*</tt>),  and <tt>/metrics</tt>). Note that individual health check endpoints and the metric endpoint may expose sensitive information.</td>
+<td>Allows read access to control-plane monitoring endpoints (i.e. {{< glossary_tooltip term_id="kube-apiserver" text="kube-apiserver" >}} liveness and readiness endpoints (<tt>/healthz</tt>, <tt>/livez</tt>, <tt>/readyz</tt>), the individual health-check endpoints (<tt>/healthz/*</tt>, <tt>/livez/*</tt>, <tt>/readyz/*</tt>),  <tt>/metrics</tt>), and causes the kube-apiserver to respect the traceparent header provided with requests for tracing. Note that individual health check endpoints and the metric endpoint may expose sensitive information.</td>
 </tr>
 </tbody>
 </table>

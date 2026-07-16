@@ -40,14 +40,6 @@ this is true when user namespaces are used.
 * The node OS needs to be Linux
 * You need to exec commands in the host
 * You need to be able to exec into pods
-* You need to enable the `UserNamespacesSupport`
-  [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)
-
-{{< note >}}
-The feature gate to enable user namespaces was previously named
-`UserNamespacesStatelessPodsSupport`, when only stateless pods were supported.
-Only Kubernetes v1.25 through to v1.27 recognise `UserNamespacesStatelessPodsSupport`.
-{{</ note >}}
 
 The cluster that you're using **must** include at least one node that meets the
 [requirements](/docs/concepts/workloads/pods/user-namespaces/#before-you-begin)
@@ -72,10 +64,10 @@ to `false`. For example:
    kubectl apply -f https://k8s.io/examples/pods/user-namespaces-stateless.yaml
    ```
 
-1. Add a debugging container and attach to it and run `readlink /proc/self/ns/user`:
+1. Exec into the pod and run `readlink /proc/self/ns/user`:
 
    ```shell
-   kubectl debug userns -it --image=busybox
+   kubectl exec -ti userns -- bash
    ```
 
 Run this command:

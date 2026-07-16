@@ -1,6 +1,10 @@
 {{ with .Site.Params.algolia_docsearch }}
 <!-- scripts for algolia docsearch -->
 {{ end }}
+{{ if .Site.Params.ui.sidebar_resizable -}}
+{{- errorf "Resizable sidebar support is NOT available" -}}
+{{- end -}}
+
 {{/* copy-and-paste helper for codenew shortcode */}}
 {{- if or (.HasShortcode "code_sample") (.HasShortcode "code") (.HasShortcode "codenew") -}}
   {{- $toastrJs := resources.Get "js/toastr-2.1.4.min.js" | minify | fingerprint -}}

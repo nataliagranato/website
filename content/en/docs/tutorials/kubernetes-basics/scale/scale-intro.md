@@ -7,6 +7,18 @@ weight: 10
 
 * Scale an existing app manually using kubectl.
 
+## {{% heading "prerequisites" %}}
+
+The shell commands in this tutorial use POSIX shell syntax, which is supported by
+the default shells on most Linux and macOS systems (for example, bash, zsh, or sh).
+Windows users must use a POSIX-compatible shell such as
+[Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install)
+or [Git Bash](https://gitforwindows.org/) to run the commands as written.
+Commands that use `export`, `$()`, and similar constructs are **not** compatible
+with PowerShell or the Windows Command Prompt.
+
+
+
 ## Scaling an application
 
 {{% alert %}}
@@ -44,18 +56,14 @@ kubectl expose deployment/kubernetes-bootcamp --type="LoadBalancer" --port 8080
 ## Scaling overview
 
 <!-- animation -->
-<div class="col-md-8">
-  <div id="myCarousel" class="carousel" data-ride="carousel" data-interval="3000">
-    <div class="carousel-inner" role="listbox">
-      <div class="item carousel-item active">
-        <img src="/docs/tutorials/kubernetes-basics/public/images/module_05_scaling1.svg">
-      </div>
-      <div class="item carousel-item">
-        <img src="/docs/tutorials/kubernetes-basics/public/images/module_05_scaling2.svg">
-      </div>
-    </div>
-  </div>
-</div>
+{{< tutorials/carousel id="myCarousel" interval="3000" >}}
+  {{< tutorials/carousel-item
+      image="/docs/tutorials/kubernetes-basics/public/images/module_05_scaling1.svg"
+      active="true" >}}
+
+  {{< tutorials/carousel-item
+      image="/docs/tutorials/kubernetes-basics/public/images/module_05_scaling2.svg" >}}
+{{< /tutorials/carousel >}}
 
 {{% alert %}}
 _Scaling is accomplished by changing the number of replicas in a Deployment._
@@ -63,7 +71,7 @@ _Scaling is accomplished by changing the number of replicas in a Deployment._
 
 Scaling out a Deployment will ensure new Pods are created and scheduled to Nodes
 with available resources. Scaling will increase the number of Pods to the new desired
-state. Kubernetes also supports [autoscaling](/docs/tasks/run-application/horizontal-pod-autoscale/)
+state. Kubernetes also supports [autoscaling](/docs/concepts/workloads/autoscaling/)
 of Pods, but it is outside of the scope of this tutorial. Scaling to zero is also
 possible, and it will terminate all Pods of the specified Deployment.
 
@@ -114,6 +122,7 @@ Two important columns of this output are:
 * _DESIRED_ displays the desired number of replicas of the application, which you
 define when you create the Deployment. This is the desired state.
 * _CURRENT_ displays how many replicas are currently running.
+
 Next, let’s scale the Deployment to 4 replicas. We’ll use the `kubectl scale` command,
 followed by the Deployment type, name and desired number of instances:
 

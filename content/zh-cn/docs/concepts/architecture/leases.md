@@ -75,6 +75,24 @@ acts as leader.
 Kubernetes 如何基于 Lease API 来选择哪个组件实例充当领导者。
 
 <!--
+### Kube controller manager lock release on exit
+-->
+### Kube 控制器管理器在退出时释放锁定
+
+{{< feature-state feature_gate_name="ControllerManagerReleaseLeaderElectionLockOnExit" >}}
+
+<!--
+When the `ControllerManagerReleaseLeaderElectionLockOnExit` feature gate is enabled,
+the `kube-controller-manager` actively releases its leader election lock during
+leader transitions, rather than waiting for the lock's TTL to expire. This allows
+a new leader to be elected more quickly, reducing leader transition latency.
+-->
+启用 `ControllerManagerReleaseLeaderElectionLockOnExit` 特性门后，
+`kube-controller-manager` 会在领导者切换期间主动释放其领导者选举锁，
+而不是等待锁的 TTL 过期。这使得新领导者能够更快地被选出，
+从而降低领导者切换延迟。
+
+<!--
 ## API server identity
 -->
 ## API 服务器身份   {#api-server-identity}
@@ -113,12 +131,12 @@ apiserver-1dfef752bcb36637d2763d1868        apiserver-1dfef752bcb36637d2763d1868
 The SHA256 hash used in the lease name is based on the OS hostname as seen by that API server. Each kube-apiserver should be
 configured to use a hostname that is unique within the cluster. New instances of kube-apiserver that use the same hostname
 will take over existing Leases using a new holder identity, as opposed to instantiating new Lease objects. You can check the
-hostname used by kube-apisever by checking the value of the `kubernetes.io/hostname` label:
+hostname used by kube-apiserver by checking the value of the `kubernetes.io/hostname` label:
 -->
 租约名称中使用的 SHA256 哈希基于 API 服务器所看到的操作系统主机名生成。
 每个 kube-apiserver 都应该被配置为使用集群中唯一的主机名。
 使用相同主机名的 kube-apiserver 新实例将使用新的持有者身份接管现有 Lease，而不是实例化新的 Lease 对象。
-你可以通过检查 `kubernetes.io/hostname` 标签的值来查看 kube-apisever 所使用的主机名：
+你可以通过检查 `kubernetes.io/hostname` 标签的值来查看 kube-apiserver 所使用的主机名：
 
 ```shell
 kubectl -n kube-system get lease apiserver-07a5ea9b9b072c4a5f3d1c3702 -o yaml

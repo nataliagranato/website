@@ -9,10 +9,17 @@ content_type: concept
 
 <!-- overview -->
 
-{{< feature-state for_k8s_version="v1.32" state="alpha" >}}
+{{< feature-state feature_gate_name="MutatingAdmissionPolicy" >}}
 <!-- due to feature gate history, use manual version specification here -->
 
 This page provides an overview of _MutatingAdmissionPolicies_.
+MutatingAdmissionPolicies allow you to change what happens when someone writes a change to the Kubernetes API.
+If you want to use declarative policies just to prevent a particular kind of change to resources (for example: protecting platform namespaces from deletion),
+[ValidatingAdmissionPolicy](/docs/reference/access-authn-authz/validating-admission-policy/)
+is
+a simpler and more effective alternative.
+
+
 
 <!-- body -->
 
@@ -47,6 +54,14 @@ A policy is generally made up of three resources:
 
 At least a MutatingAdmissionPolicy and a corresponding MutatingAdmissionPolicyBinding
 must be defined for a policy to have an effect.
+
+{{< note >}}
+Names ending in `.static.k8s.io` are reserved for
+[manifest-based admission control](/docs/reference/access-authn-authz/manifest-admission-control/)
+and cannot be used for API-based policies or bindings. This reservation is
+enforced when the `ManifestBasedAdmissionControlConfig`
+[feature gate](/docs/reference/command-line-tools-reference/feature-gates/#ManifestBasedAdmissionControlConfig) is enabled.
+{{< /note >}}
 
 If a MutatingAdmissionPolicy does not need to be configured via parameters, simply leave
 `spec.paramKind` in  MutatingAdmissionPolicy not specified.
@@ -219,13 +234,24 @@ Only property names of the form `[a-zA-Z_.-/][a-zA-Z0-9_.-/]*` are accessible.
 
 There are certain API kinds that are exempt from admission-time mutation. For example, you can't create a MutatingAdmissionPolicy that changes a MutatingAdmissionPolicy.
 
+{{< note >}}
+When configured via
+[manifest-based admission control](/docs/reference/access-authn-authz/manifest-admission-control/),
+a MutatingAdmissionPolicy can intercept all resource types listed below.
+This bypasses the restrictions usually applied to policies created via the REST
+API, allowing you to mutate even admission configuration and security-sensitive
+resources. Unlike the REST API, a bad manifest-based admission policy
+intercepting these resources would not be unrecoverable since it is defined on
+disk rather than through the API.
+{{< /note >}}
+
 The list of exempt API kinds is:
 
-* [ValidatingAdmissionPolicies]({{< relref "/docs/reference/kubernetes-api/policy-resources/validating-admission-policy-v1/" >}})
-* [ValidatingAdmissionPolicyBindings]({{< relref "/docs/reference/kubernetes-api/policy-resources/validating-admission-policy-binding-v1/" >}})
+* [ValidatingAdmissionPolicies]({{< relref "/docs/reference/kubernetes-api/admissionregistration/validating-admission-policy-v1/" >}})
+* [ValidatingAdmissionPolicyBindings]({{< relref "/docs/reference/kubernetes-api/admissionregistration/validating-admission-policy-binding-v1/" >}})
 * MutatingAdmissionPolicies
 * MutatingAdmissionPolicyBindings
-* [TokenReviews]({{< relref "/docs/reference/kubernetes-api/authentication-resources/token-review-v1/" >}})
-* [LocalSubjectAccessReviews]({{< relref "/docs/reference/kubernetes-api/authorization-resources/local-subject-access-review-v1/" >}})
-* [SelfSubjectAccessReviews]({{< relref "/docs/reference/kubernetes-api/authorization-resources/self-subject-access-review-v1/" >}})
-* [SelfSubjectReviews]({{< relref "/docs/reference/kubernetes-api/authentication-resources/self-subject-review-v1/" >}})
+* [TokenReviews]({{< relref "/docs/reference/kubernetes-api/definitions/token-review-v1-authentication/" >}})
+* [LocalSubjectAccessReviews]({{< relref "/docs/reference/kubernetes-api/definitions/local-subject-access-review-v1-authorization/" >}})
+* [SelfSubjectAccessReviews]({{< relref "/docs/reference/kubernetes-api/definitions/self-subject-access-review-v1-authorization/" >}})
+* [SelfSubjectReviews]({{< relref "/docs/reference/kubernetes-api/definitions/self-subject-review-v1-authentication/" >}})

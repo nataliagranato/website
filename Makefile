@@ -2,6 +2,9 @@ HUGO_VERSION      = $(shell grep ^HUGO_VERSION netlify.toml | tail -n 1 | cut -d
 NODE_BIN          = node_modules/.bin
 NETLIFY_FUNC      = $(NODE_BIN)/netlify-lambda
 
+# The segments variable is used to specify which segments to render.
+segments          ?= all
+
 # The CONTAINER_ENGINE variable is used for specifying the container engine. By default 'docker' is used
 # but this can be overridden when calling make, e.g.
 # CONTAINER_ENGINE=podman make container-image
@@ -24,7 +27,8 @@ CONTAINER_HUGO_MOUNTS = \
 	--mount type=bind,source=$(CURDIR)/layouts,target=/src/layouts,readonly \
 	--mount type=bind,source=$(CURDIR)/static,target=/src/static,readonly \
 	--mount type=tmpfs,destination=/tmp,tmpfs-mode=01777 \
-	--mount type=bind,source=$(CURDIR)/hugo.toml,target=/src/hugo.toml,readonly
+	--mount type=bind,source=$(CURDIR)/hugo.toml,target=/src/hugo.toml,readonly \
+	--mount type=bind,source=$(CURDIR)/hugo.server.toml,target=/src/hugo.server.toml,readonly
 
 CCRED=\033[0;31m
 CCEND=\033[0m
@@ -53,7 +57,7 @@ build-preview: module-check ## Build site with drafts and future posts enabled
 	hugo --cleanDestinationDir --buildDrafts --buildFuture --environment preview
 
 deploy-preview: ## Deploy preview site via netlify
-	GOMAXPROCS=1 hugo --cleanDestinationDir --enableGitInfo --buildDrafts --buildFuture --environment preview -b $(DEPLOY_PRIME_URL)
+	hugo --cleanDestinationDir --enableGitInfo --buildDrafts --buildFuture --environment preview -b $(DEPLOY_PRIME_URL)
 
 functions-build:
 	$(NETLIFY_FUNC) build functions-src
@@ -62,14 +66,14 @@ check-headers-file:
 	scripts/check-headers-file.sh
 
 production-build: module-check ## Build the production site and ensure that noindex headers aren't added
-	GOMAXPROCS=1 hugo --cleanDestinationDir --minify --environment production
+	hugo --cleanDestinationDir --minify --environment production
 	HUGO_ENV=production $(MAKE) check-headers-file
 
 non-production-build: module-check ## Build the non-production site, which adds noindex headers to prevent indexing
-	GOMAXPROCS=1 hugo --cleanDestinationDir --enableGitInfo --environment nonprod
+	hugo --cleanDestinationDir --enableGitInfo --environment nonprod
 
 serve: module-check ## Boot the development server.
-	hugo server --buildDrafts --buildFuture --environment development
+	hugo server --config hugo.toml,hugo.server.toml --buildDrafts --buildFuture --environment development --renderSegments $(segments)
 
 docker-image:
 	@echo -e "$(CCRED)**** The use of docker-image is deprecated. Use container-image instead. ****$(CCEND)"
@@ -118,7 +122,7 @@ container-build: module-check
 container-serve: module-check ## Boot the development server using container.
 	$(CONTAINER_RUN_TTY) --cap-drop=ALL --cap-add=AUDIT_WRITE $(CONTAINER_HUGO_MOUNTS) \
 		-p 1313:1313 $(CONTAINER_IMAGE) \
-		hugo server --buildDrafts --buildFuture --environment development --bind 0.0.0.0 --destination /tmp/public --cleanDestinationDir --noBuildLock
+		hugo server --config hugo.toml,hugo.server.toml --buildDrafts --buildFuture --environment development --bind 0.0.0.0 --destination /tmp/public --cleanDestinationDir --noBuildLock --renderSegments $(segments)
 
 test-examples:
 	scripts/test_examples.sh install

@@ -91,7 +91,7 @@ For instructions on setting the default StorageClass, see
 When a PVC does not specify a `storageClassName`, the default StorageClass is
 used.
 -->
-### 默认 StorageClass  {#default-storageclass}
+## 默认 StorageClass  {#default-storageclass}
 
 你可以将某个 StorageClass 标记为集群的默认存储类。
 关于如何设置默认的 StorageClass，
@@ -167,7 +167,7 @@ of the associated PVC to `""`.
 Each StorageClass has a provisioner that determines what volume plugin is used
 for provisioning PVs. This field must be specified.
 -->
-### 存储制备器  {#provisioner}
+## 存储制备器  {#provisioner}
 
 每个 StorageClass 都有一个制备器（Provisioner），用来决定使用哪个卷插件制备 PV。
 该字段必须指定。
@@ -260,7 +260,7 @@ PersistentVolume 可以配置为可扩展。
 <!--
 "Table of Volume types and the version of Kubernetes they require"
 -->
-{{< table caption = "卷类型及其 Kubernetes 版本要求"  >}}
+{{< table caption = "卷类型及其 Kubernetes 版本要求" >}}
 
 <!--
 Volume type | Required Kubernetes version for volume expansion
@@ -297,7 +297,8 @@ the class or PV. If a mount option is invalid, the PV mount fails.
 由 StorageClass 动态创建的 PersistentVolume 将使用类中 `mountOptions` 字段指定的挂载选项。
 
 如果卷插件不支持挂载选项，却指定了挂载选项，则制备操作会失败。
-挂载选项在 StorageClass 和 PV 上都**不**会做验证。如果其中一个挂载选项无效，那么这个 PV 挂载操作就会失败。
+挂载选项在 StorageClass 和 PV 上都**不**会做验证。如果其中一个挂载选项无效，
+那么这个 PV 挂载操作就会失败。
 
 <!--
 ## Volume binding mode
@@ -662,14 +663,6 @@ The following examples use the VMware Cloud Provider (vCP) StorageClass provisio
 
      你可以参考[基于存储策略的动态制备卷管理](https://github.com/vmware-archive/vsphere-storage-for-kubernetes/blob/fa4c8b8ad46a85b6555d715dd9d27ff69839df53/documentation/policy-based-mgmt.md)，
      进一步了解有关持久卷管理的存储策略的详细信息。
-
-<!--
-There are few
-[vSphere examples](https://github.com/kubernetes/examples/tree/master/staging/volumes/vsphere)
-which you try out for persistent volume management inside Kubernetes for vSphere.
--->
-有几个 [vSphere 例子](https://github.com/kubernetes/examples/tree/master/staging/volumes/vsphere)供你在
-Kubernetes for vSphere 中尝试进行持久卷管理。
 
 <!--
 ### Ceph RBD (deprecated) {#ceph-rbd}

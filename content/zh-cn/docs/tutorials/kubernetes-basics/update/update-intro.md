@@ -15,9 +15,25 @@ Perform a rolling update using kubectl.
 使用 kubectl 执行滚动更新。
 
 <!--
+The shell commands in this tutorial use POSIX shell syntax, which is supported by
+the default shells on most Linux and macOS systems (for example, bash, zsh, or sh).
+Windows users must use a POSIX-compatible shell such as
+[Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install)
+or [Git Bash](https://gitforwindows.org/) to run the commands as written.
+Commands that use `export`, `$()`, and similar constructs are **not** compatible
+with PowerShell or the Windows Command Prompt.
+-->
+本教程中的 Shell 命令使用 POSIX Shell 语法，
+大多数 Linux 和 macOS 系统的默认 Shell（例如 bash、zsh 或 sh）都支持这种语法。
+Windows 用户必须使用兼容 POSIX 的 Shell，例如
+[Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install)
+或 [Git Bash](https://gitforwindows.org/)，才能按本文所述的方式运行这些命令。
+使用 `export`、`$()` 以及类似构造的命令 **不兼容** PowerShell 或 Windows Command Prompt。
+
+<!--
 ## Updating an application
 -->
-## 更新应用
+## 更新应用  {#updating-an-application}
 
 {{% alert %}}
 <!--
@@ -37,7 +53,7 @@ The new Pods are scheduled on Nodes with available resources, and Kubernetes wai
 for those new Pods to start before removing the old Pods.
 -->
 用户希望应用程序始终可用，而开发人员则需要每天多次部署它们的新版本。
-在 Kubernetes 中，这些是通过滚动更新（Rolling Updates）完成的。 
+在 Kubernetes 中，这些是通过滚动更新（Rolling Update）完成的。 
 **滚动更新**允许通过使用新的实例逐步更新 Pod 实例，实现零停机的 Deployment 更新。
 新的 Pod 将被调度到具有可用资源的节点上。
 
@@ -54,44 +70,43 @@ versioned and any Deployment update can be reverted to a previous (stable) versi
 这两个选项都可以配置为（Pod）数字或百分比。
 在 Kubernetes 中，更新是具有版本控制的，任何 Deployment 更新都可以恢复到以前的（稳定）版本。
 
+<!--
 ## Rolling updates overview
+-->
+## 滚动更新概述
 
-<!-- animation -->
-<div class="col-md-8">
-  <div id="myCarousel" class="carousel" data-ride="carousel" data-interval="3000">
-    <div class="carousel-inner" role="listbox">
-      <div class="item carousel-item active">
-        <img src="/docs/tutorials/kubernetes-basics/public/images/module_06_rollingupdates1.svg">
-      </div>
-      <div class="item carousel-item">
-        <img src="/docs/tutorials/kubernetes-basics/public/images/module_06_rollingupdates2.svg">
-      </div>
-      <div class="item carousel-item">
-        <img src="/docs/tutorials/kubernetes-basics/public/images/module_06_rollingupdates3.svg">
-      </div>
-      <div class="item carousel-item">
-        <img src="/docs/tutorials/kubernetes-basics/public/images/module_06_rollingupdates4.svg">
-      </div>
-    </div>
-  </div>
-</div>
+{{< tutorials/carousel id="myCarousel" interval="3000" >}}
+  {{< tutorials/carousel-item
+      image="/docs/tutorials/kubernetes-basics/public/images/module_06_rollingupdates1.svg"
+      active="true" >}}
+
+  {{< tutorials/carousel-item
+      image="/docs/tutorials/kubernetes-basics/public/images/module_06_rollingupdates2.svg" >}}
+
+  {{< tutorials/carousel-item
+      image="/docs/tutorials/kubernetes-basics/public/images/module_06_rollingupdates3.svg" >}}
+
+  {{< tutorials/carousel-item
+      image="/docs/tutorials/kubernetes-basics/public/images/module_06_rollingupdates4.svg" >}}
+{{< /tutorials/carousel >}}
 
 {{% alert %}}
 <!--
-_If a Deployment is exposed publicly, the Service will load-balance the traffic
-only to available Pods during the update._
+If a Deployment is publicly exposed, the Service will send traffic only to Pods that can handle requests.  
+This ensures users continue to access the application during an update.
 -->
-**如果 Deployment 的访问是公开的，Service
-在更新期间仅将流量负载均衡到可用的 Pod。**
+如果 Deployment 的访问是公开的，Service 只将流量发送到能够处理请求的 Pod。  
+这可以确保在更新期间，用户仍然可以继续访问此应用。
 {{% /alert %}}
 
 <!--
-Similar to application Scaling, if a Deployment is exposed publicly, the Service
-will load-balance the traffic only to available Pods during the update. An available
-Pod is an instance that is available to the users of the application.
-
+During a rolling update, this behavior keeps the application available by routing traffic only to Pods that are serving requests.
 Rolling updates allow the following actions:
+-->
+在滚动更新期间，这种行为通过仅将流量路由到正在处理请求的 Pod 来保持应用的可用性。
+滚动更新允许以下操作：
 
+<!--
 * Promote an application from one environment to another (via container image updates)
 * Rollback to previous versions
 * Continuous Integration and Continuous Delivery of applications with zero downtime
@@ -99,11 +114,6 @@ Rolling updates allow the following actions:
 In the following interactive tutorial, we'll update our application to a new version,
 and also perform a rollback.
 -->
-与应用程序规模扩缩类似，如果 Deployment 的访问是公开的，Service
-在更新期间仅将流量负载均衡到可用的 Pod。可用的 Pod 是指对应用的用户可用的实例。
-
-滚动更新允许以下操作：
-
 * 将应用程序从一个环境升级到另一个环境（通过容器镜像更新）
 * 回滚到以前的版本
 * 持续集成和持续交付应用程序，无需停机
@@ -175,8 +185,8 @@ you can create it again with:
 -->
 ### 验证更新
 
-首先，检查服务是否正在运行，因为你可能在上一个教程步骤中删除了它。
-运行 `describe services/kubernetes-bootcamp`，如果服务缺失，
+首先，检查 Service 是否正在运行，因为你可能在上一个教程步骤中删除了它。
+运行 `describe services/kubernetes-bootcamp`，如果 Service 缺失，
 你可以使用以下命令重新创建：
 
 ```shell
@@ -259,8 +269,7 @@ kubectl get deployments
 Notice that the output doesn't list the desired number of available Pods. Run the
 `get pods` subcommand to list all Pods:
 -->
-注意输出中不会列出期望的可用 Pod 数。运行 `get pods`
-子命令来列出所有 Pod：
+注意输出中不会列出期望的可用 Pod 数。运行 `get pods` 子命令来列出所有 Pod：
 
 ```shell
 kubectl get pods
@@ -304,7 +313,7 @@ Use the `get pods` subcommand to list the Pods again:
 `rollout undo` 命令会恢复 Deployment 到先前的已知状态（`v2` 的镜像）。
 更新是有版本控制的，你可以恢复 Deployment 到任何先前已知状态。
 
-使用 `get pods` 子命令再次列举 Pod：
+使用 `get pods` 子命令再次列出 Pod：
 
 ```shell
 kubectl get pods

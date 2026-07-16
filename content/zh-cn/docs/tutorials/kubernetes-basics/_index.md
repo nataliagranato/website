@@ -69,88 +69,93 @@ Kubernetes 是一个可用于生产环境的开源平台，基于 Google 在容�
 -->
 ## Kubernetes 基础知识模块
 
-<!-- css code to preserve original format -->
-<link rel="stylesheet" href="/css/style_tutorials.css">
+<!-- For translators, translate only the values of the ‘alt’ and ‘title’ keys -->
+{{< tutorials/modules >}}
+  <!--
+  {{< tutorials/module
+      path="/docs/tutorials/kubernetes-basics/create-cluster/cluster-intro/"
+      image="/docs/tutorials/kubernetes-basics/public/images/module_01.svg?v=1469803628347"
+      alt="Module 1"
+      title="1. Create a Kubernetes cluster" >}}
+  -->
+  {{< tutorials/module
+      path="/docs/tutorials/kubernetes-basics/create-cluster/cluster-intro/"
+      image="/docs/tutorials/kubernetes-basics/public/images/module_01.svg?v=1469803628347"
+      alt="模块一"
+      title="1.  创建一个 Kubernetes 集群" >}}
 
-<div class="tutorials-modules">
-  <div class="module">
-    <!--
-    <a href="/docs/tutorials/kubernetes-basics/create-cluster/cluster-intro/">
-      <img src="/docs/tutorials/kubernetes-basics/public/images/module_01.svg?v=1469803628347" alt="Module 1">
-      <h5>1. Create a Kubernetes cluster</h5>
-    </a>
-    -->
-    <a href="/zh-cn/docs/tutorials/kubernetes-basics/create-cluster/cluster-intro/">
-      <img src="/docs/tutorials/kubernetes-basics/public/images/module_01.svg?v=1469803628347" alt="模块 1">
-      <h5>1. 创建一个 Kubernetes 集群</h5>
-    </a>
-  </div>
-  <div class="module">
-    <!--
-    <a href="/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/">
-      <img src="/docs/tutorials/kubernetes-basics/public/images/module_02.svg?v=1469803628347" alt="Module 2">
-      <h5>2. Deploy an app</h5>
-    </a>
-    -->
-    <a href="/zh-cn/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/">
-      <img src="/docs/tutorials/kubernetes-basics/public/images/module_02.svg?v=1469803628347" alt="模块 2">
-      <h5>2. 部署一个应用</h5>
-    </a>
-  </div>
-  <div class="module">
-    <!--
-    <a href="/docs/tutorials/kubernetes-basics/explore/explore-intro/">
-      <img src="/docs/tutorials/kubernetes-basics/public/images/module_03.svg?v=1469803628347" alt="Module 3">
-      <h5>3. Explore your app</h5>
-    </a>
-    -->
-    <a href="/zh-cn/docs/tutorials/kubernetes-basics/explore/explore-intro/">
-      <img src="/docs/tutorials/kubernetes-basics/public/images/module_03.svg?v=1469803628347" alt="模块 3">
-      <h5>3. 探索你的应用</h5>
-    </a>
-  </div>
-  <div class="module">
-    <!--
-    <a href="/docs/tutorials/kubernetes-basics/expose/expose-intro/">
-      <img src="/docs/tutorials/kubernetes-basics/public/images/module_04.svg?v=1469803628347" alt="Module 4">
-      <h5>4. Expose your app publicly</h5>
-    </a>
-    -->
-    <a href="/zh-cn/docs/tutorials/kubernetes-basics/expose/expose-intro/">
-      <img src="/docs/tutorials/kubernetes-basics/public/images/module_04.svg?v=1469803628347" alt="模块 4">
-      <h5>4. 公开发布你的应用</h5>
-    </a>
-  </div>
-  <div class="module">
-    <!--
-    <a href="/docs/tutorials/kubernetes-basics/scale/scale-intro/">
-      <img src="/docs/tutorials/kubernetes-basics/public/images/module_05.svg?v=1469803628347" alt="Module 5">
-      <h5>5. Scale up your app</h5>
-    </a>
-    -->
-    <a href="/zh-cn/docs/tutorials/kubernetes-basics/scale/scale-intro/">
-      <img src="/docs/tutorials/kubernetes-basics/public/images/module_05.svg?v=1469803628347" alt="模块 5">
-      <h5>5. 扩大你的应用规模</h5>
-    </a>
-  </div>
-  <div class="module">
-    <!--
-    <a href="/docs/tutorials/kubernetes-basics/update/update-intro/">
-      <img src="/docs/tutorials/kubernetes-basics/public/images/module_06.svg?v=1469803628347" alt="Module 6">
-      <h5>6. Update your app</h5>
-    </a>
-    -->
-    <a href="/zh-cn/docs/tutorials/kubernetes-basics/update/update-intro/">
-      <img src="/docs/tutorials/kubernetes-basics/public/images/module_06.svg?v=1469803628347" alt="模块 6">
-      <h5>6. 更新你的应用</h5>
-    </a>
-  </div>
-</div>
+  <!--
+  {{< tutorials/module
+      path="/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/"
+      image="/docs/tutorials/kubernetes-basics/public/images/module_02.svg?v=1469803628347"
+      alt="Module 2"
+      title="2. Deploy an app" >}}
+  -->
+  {{< tutorials/module
+      path="/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/"
+      image="/docs/tutorials/kubernetes-basics/public/images/module_02.svg?v=1469803628347"
+      alt="模块二"
+      title="2. 部署一个应用" >}}
+
+  <!--
+  {{< tutorials/module
+      path="/docs/tutorials/kubernetes-basics/explore/explore-intro/"
+      image="/docs/tutorials/kubernetes-basics/public/images/module_03.svg?v=1469803628347"
+      alt="Module 3"
+      title="3. Explore your app" >}}
+  -->
+  {{< tutorials/module
+      path="/docs/tutorials/kubernetes-basics/explore/explore-intro/"
+      image="/docs/tutorials/kubernetes-basics/public/images/module_03.svg?v=1469803628347"
+      alt="模块三"
+      title="3. 访问你的应用" >}}
+
+  <!--
+  {{< tutorials/module
+      path="/docs/tutorials/kubernetes-basics/expose/expose-intro/"
+      image="/docs/tutorials/kubernetes-basics/public/images/module_04.svg?v=1469803628347"
+      alt="Module 4"
+      title="4. Expose your app publicly" >}}
+  -->
+  {{< tutorials/module
+      path="/docs/tutorials/kubernetes-basics/expose/expose-intro/"
+      image="/docs/tutorials/kubernetes-basics/public/images/module_04.svg?v=1469803628347"
+      alt="模块四"
+      title="4. 公开发布你的应用" >}}
+
+  <!--
+  {{< tutorials/module
+      path="/docs/tutorials/kubernetes-basics/scale/scale-intro/"
+      image="/docs/tutorials/kubernetes-basics/public/images/module_05.svg?v=1469803628347"
+      alt="Module 5"
+      title="5. Scale up your app" >}}
+  -->
+  {{< tutorials/module
+      path="/docs/tutorials/kubernetes-basics/scale/scale-intro/"
+      image="/docs/tutorials/kubernetes-basics/public/images/module_05.svg?v=1469803628347"
+      alt="模块五"
+      title="5. 扩大你的应用规模" >}}
+
+  <!--
+  {{< tutorials/module
+      path="/docs/tutorials/kubernetes-basics/update/update-intro/"
+      image="/docs/tutorials/kubernetes-basics/public/images/module_06.svg?v=1469803628347"
+      alt="Module 6"
+      title="6. Update your app" >}}
+  -->
+  {{< tutorials/module
+      path="/docs/tutorials/kubernetes-basics/update/update-intro/"
+      image="/docs/tutorials/kubernetes-basics/public/images/module_06.svg?v=1469803628347"
+      alt="模块六"
+      title="6. 更新你的应用" >}}
+{{< /tutorials/modules >}}
 
 ## {{% heading "whatsnext" %}}
 
 <!--
-* Tutorial [Using Minikube to Create a
-Cluster](/docs/tutorials/kubernetes-basics/create-cluster/)
+* See the [Learning environment](/docs/setup/learning-environment/) page to learn more about practice clusters and how you can run your own one.
+* Tutorial [Using Minikube to Create a Cluster](/docs/tutorials/kubernetes-basics/create-cluster/)
 -->
+* 请参阅[学习环境](/zh-cn/docs/setup/learning-environment/)页面，
+  了解有关练习集群以及如何运行自己的练习集群的更多信息。
 * [使用 Minikube 创建一个集群](/zh-cn/docs/tutorials/kubernetes-basics/create-cluster/)的教程

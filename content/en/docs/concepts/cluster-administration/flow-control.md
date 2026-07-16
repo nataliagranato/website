@@ -95,7 +95,7 @@ way to do that is with the objects that configure classification and
 handling, discussed below. Another way is to disable Priority and
 Fairness on server B entirely, using the techniques discussed above. A
 third way, which is the simplest to use when server B is not
-`kube-apisever`, is to build server B with Priority and Fairness
+`kube-apiserver`, is to build server B with Priority and Fairness
 disabled in the code.
 
 ## Concepts
@@ -823,5 +823,5 @@ Example FlowSchema object to isolate list event requests:
 - You can visit flow control [reference doc](/docs/reference/debug-cluster/flow-control/) to learn more about troubleshooting.
 - For background information on design details for API priority and fairness, see
   the [enhancement proposal](https://github.com/kubernetes/enhancements/tree/master/keps/sig-api-machinery/1040-priority-and-fairness).
-- You can make suggestions and feature requests via [SIG API Machinery](https://github.com/kubernetes/community/tree/master/sig-api-machinery)
+- You can make suggestions and feature requests via [SIG API Machinery](https://github.com/kubernetes/community/tree/main/sig-api-machinery)
   or the feature's [slack channel](https://kubernetes.slack.com/messages/api-priority-and-fairness).

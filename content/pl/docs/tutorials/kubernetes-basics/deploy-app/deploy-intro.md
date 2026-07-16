@@ -8,6 +8,18 @@ weight: 10
 * Poznaj sposób wdrażania aplikacji.
 * Wdróż swoją pierwszą aplikację na Kubernetesie za pomocą narzędzia kubectl.
 
+
+## {{% heading "prerequisites" %}}
+
+Polecenia w tym poradniku są napisane w składni zgodnej ze standardem POSIX, którą
+obsługują domyślne powłoki w Linuxie i macOS (np. bash, zsh, sh). Jeśli
+używasz Windowsa, potrzebujesz powłoki zgodnej z POSIX, np. WSL
+[Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install) lub
+[Git Bash](https://gitforwindows.org/), żeby
+uruchomić je w takiej formie. Polecenia z `export`, `$()` i podobnymi
+elementami **nie** zadziałają w PowerShellu ani w zwykłym wierszu polecenia.
+
+
 ## Deploymenty w Kubernetesie {#kubernetes-deployments}
 
 {{% alert %}}
@@ -61,7 +73,7 @@ omawiają skalowanie i aktualizowanie Deploymentów.
 Na potrzeby pierwszej instalacji użyjesz aplikacji hello-node zapakowaną w kontener Docker-a,
 która korzysta z NGINXa i powtarza wszystkie wysłane do niej zapytania. (Jeśli jeszcze nie
 próbowałeś stworzyć aplikacji hello-node i uruchomić za pomocą kontenerów, możesz spróbować
-teraz, kierując się instrukcjami samouczka [samouczku Hello Minikube](/docs/tutorials/hello-minikube/).
+teraz, kierując się instrukcjami samouczka [samouczku Hello Minikube](/docs/tutorials/hello-minikube/).)
 
 Musisz mieć zainstalowane narzędzie kubectl. Jeśli potrzebujesz
 go zainstalować, odwiedź [install tools](/docs/tasks/tools/#kubectl).

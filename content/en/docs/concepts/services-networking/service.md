@@ -121,7 +121,7 @@ match its selector, and then makes any necessary updates to the set of
 EndpointSlices for the Service.
 
 The name of a Service object must be a valid
-[RFC 1035 label name](/docs/concepts/overview/working-with-objects/names#rfc-1035-label-names).
+[RFC 1123 label name](/docs/concepts/overview/working-with-objects/names#rfc-1123-label-names).
 
 
 {{< note >}}
@@ -138,6 +138,20 @@ of the Service to the Pod port in the following way:
 
 ```yaml
 apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app.kubernetes.io/name: proxy
+  ports:
+  - name: name-of-service-port
+    protocol: TCP
+    port: 80
+    targetPort: http-web-svc
+
+---
+apiVersion: v1
 kind: Pod
 metadata:
   name: nginx
@@ -150,20 +164,6 @@ spec:
     ports:
       - containerPort: 80
         name: http-web-svc
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nginx-service
-spec:
-  selector:
-    app.kubernetes.io/name: proxy
-  ports:
-  - name: name-of-service-port
-    protocol: TCP
-    port: 80
-    targetPort: http-web-svc
 ```
 
 This works even if there is a mixture of Pods in the Service using a single
@@ -363,7 +363,7 @@ This field follows standard Kubernetes label syntax. Valid values are one of:
 
 | Protocol | Description |
 |----------|-------------|
-| `kubernetes.io/h2c` | HTTP/2 over cleartext as described in [RFC 7540](https://www.rfc-editor.org/rfc/rfc7540) |
+| `kubernetes.io/h2c` | HTTP/2 over cleartext as described in [RFC 9113](https://www.rfc-editor.org/rfc/rfc9113) |
 | `kubernetes.io/ws`  | WebSocket over cleartext as described in [RFC 6455](https://www.rfc-editor.org/rfc/rfc6455) |
 | `kubernetes.io/wss` | WebSocket over TLS as described in [RFC 6455](https://www.rfc-editor.org/rfc/rfc6455) |
 
@@ -529,6 +529,14 @@ To avoid this problem, the port range for NodePort services is divided into two 
 Dynamic port assignment uses the upper band by default, and it may use the lower band once the 
 upper band has been exhausted. Users can then allocate from the lower band with a lower risk of port collision.
 
+When using the default NodePort range 30000-32767, the bands are partitioned as follows: 
+
+- Static band: 30000-30085
+- Dynamic band: 30086-32767
+
+See [Avoid Collisions Assigning Ports to NodePort Services](/blog/2023/05/11/nodeport-dynamic-and-static-allocation/)
+for more details on how the static and dynamic bands are calculated.
+
 #### Custom IP address configuration for `type: NodePort` Services {#service-nodeport-custom-listen-address}
 
 You can set up nodes in your cluster to use a particular IP address for serving node port
@@ -679,8 +687,6 @@ Unprefixed names are reserved for end-users.
 
 #### Load balancer IP address mode {#load-balancer-ip-mode}
 
-{{< feature-state feature_gate_name="LoadBalancerIPMode" >}}
-
 For a Service of `type: LoadBalancer`, a controller can set `.status.loadBalancer.ingress.ipMode`. 
 The `.status.loadBalancer.ingress.ipMode` specifies how the load-balancer IP behaves. 
 It may be specified only when the `.status.loadBalancer.ingress.ip` field is also specified.
@@ -727,7 +733,7 @@ metadata:
 metadata:
   name: my-service
   annotations:
-    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internal"
 ```
 
 {{% /tab %}}
@@ -983,33 +989,26 @@ to control how Kubernetes routes traffic to healthy (“ready”) backends.
 
 See [Traffic Policies](/docs/reference/networking/virtual-ips/#traffic-policies) for more details.
 
-### Traffic distribution
-
-{{< feature-state feature_gate_name="ServiceTrafficDistribution" >}}
+### Traffic distribution control {#traffic-distribution}
 
 The `.spec.trafficDistribution` field provides another way to influence traffic
 routing within a Kubernetes Service. While traffic policies focus on strict
 semantic guarantees, traffic distribution allows you to express _preferences_
 (such as routing to topologically closer endpoints). This can help optimize for
 performance, cost, or reliability. In Kubernetes {{< skew currentVersion >}}, the
-following field value is supported: 
-
-`PreferClose`
-: Indicates a preference for routing traffic to endpoints that are in the same
-  zone as the client.
-
-{{< feature-state feature_gate_name="PreferSameTrafficDistribution" >}}
-
-Two additional values are available when the `PreferSameTrafficDistribution`
-[feature gate](/docs/reference/command-line-tools-reference/feature-gates/) is
-enabled:
+following values are supported:
 
 `PreferSameZone`
-: This is an alias for `PreferClose` that is clearer about the intended semantics.
+: Indicates a preference for routing traffic to endpoints that are in the same
+  zone as the client.
 
 `PreferSameNode`
 : Indicates a preference for routing traffic to endpoints that are on the same
   node as the client.
+
+`PreferClose` (deprecated)
+: This is an older alias for `PreferSameZone` that is less clear about
+  the semantics.
 
 If the field is not set, the implementation will apply its default routing strategy.
 
@@ -1025,6 +1024,12 @@ IP address. Read [session affinity](/docs/reference/networking/virtual-ips/#sess
 to learn more.
 
 ## External IPs
+
+{{< feature-state for_k8s_version="v1.36" state="deprecated" >}}
+
+All users should begin migrating away from `externalIPs`.
+Consider using an external load balancer controller or a Gateway API
+implementation instead.
 
 If there are external IPs that route to one or more cluster nodes, Kubernetes Services
 can be exposed on those `externalIPs`. When network traffic arrives into the cluster, with

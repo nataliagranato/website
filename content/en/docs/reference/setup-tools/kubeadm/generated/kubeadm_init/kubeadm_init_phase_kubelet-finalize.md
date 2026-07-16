@@ -10,8 +10,6 @@ guide. You can file document formatting bugs against the
 -->
 
 
-Updates settings relevant to the kubelet after TLS bootstrap
-
 ### Synopsis
 
 
@@ -24,7 +22,7 @@ kubeadm init phase kubelet-finalize [flags]
 ### Examples
 
 ```
-  # Updates settings relevant to the kubelet after TLS bootstrap"
+  # Updates settings relevant to the kubelet after TLS bootstrap
   kubeadm init phase kubelet-finalize all --config
 ```
 

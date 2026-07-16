@@ -15,9 +15,25 @@ weight: 10
 * 使用 kubectl 手动扩缩现有的应用
 
 <!--
+The shell commands in this tutorial use POSIX shell syntax, which is supported by
+the default shells on most Linux and macOS systems (for example, bash, zsh, or sh).
+Windows users must use a POSIX-compatible shell such as
+[Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install)
+or [Git Bash](https://gitforwindows.org/) to run the commands as written.
+Commands that use `export`, `$()`, and similar constructs are **not** compatible
+with PowerShell or the Windows Command Prompt.
+-->
+本教程中的 Shell 命令使用 POSIX Shell 语法，
+大多数 Linux 和 macOS 系统的默认 Shell（例如 bash、zsh 或 sh）都支持这种语法。
+Windows 用户必须使用兼容 POSIX 的 Shell，例如
+[Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install)
+或 [Git Bash](https://gitforwindows.org/)，才能按本文所述的方式运行这些命令。
+使用 `export`、`$()` 以及类似构造的命令 **不兼容** PowerShell 或 Windows Command Prompt。
+
+<!--
 ## Scaling an application
 -->
-## 扩缩应用
+## 扩缩应用  {#scaling-an-application}
 
 {{% alert %}}
 <!--
@@ -62,9 +78,9 @@ first delete that Service and then run the following command to create a new Ser
 with its `type` set to `LoadBalancer`:
 -->
 如果你是在[上一节](/zh-cn/docs/tutorials/kubernetes-basics/expose/expose-intro/)之后尝试此操作，
-那么你可能已经删除了你创建的服务或已创建了 `type: NodePort` 类别的 Service。
+那么你可能已经删除了创建的 Service 或已创建了 `type: NodePort` 类型的 Service。
 在本节中，假设你已经为 kubernetes-bootcamp Deployment 创建了 `type: LoadBalancer`
-类别的 Service。
+类型的 Service。
 
 如果你**没有**删除在[前一节](/zh-cn/docs/tutorials/kubernetes-basics/expose/expose-intro)中创建的 Service，
 请先删除该 Service，然后运行以下命令来创建一个新的 `type` 设置为 `LoadBalancer` 的 Service：
@@ -79,19 +95,14 @@ kubectl expose deployment/kubernetes-bootcamp --type="LoadBalancer" --port 8080
 -->
 ## 扩缩概述
 
-<!-- animation -->
-<div class="col-md-8">
-  <div id="myCarousel" class="carousel" data-ride="carousel" data-interval="3000">
-    <div class="carousel-inner" role="listbox">
-      <div class="item carousel-item active">
-        <img src="/docs/tutorials/kubernetes-basics/public/images/module_05_scaling1.svg">
-      </div>
-      <div class="item carousel-item">
-        <img src="/docs/tutorials/kubernetes-basics/public/images/module_05_scaling2.svg">
-      </div>
-    </div>
-  </div>
-</div>
+{{< tutorials/carousel id="myCarousel" interval="3000" >}}
+{{< tutorials/carousel-item
+     image="/docs/tutorials/kubernetes-basics/public/images/module_05_scaling1.svg"
+     active="true" >}}
+
+{{< tutorials/carousel-item
+     image="/docs/tutorials/kubernetes-basics/public/images/module_05_scaling2.svg" >}}
+{{< /tutorials/carousel >}}
 
 {{% alert %}}
 <!--
@@ -103,15 +114,15 @@ _Scaling is accomplished by changing the number of replicas in a Deployment._
 <!--
 Scaling out a Deployment will ensure new Pods are created and scheduled to Nodes
 with available resources. Scaling will increase the number of Pods to the new desired
-state. Kubernetes also supports [autoscaling](/docs/tasks/run-application/horizontal-pod-autoscale/)
+state. Kubernetes also supports [autoscaling](/docs/concepts/workloads/autoscaling/)
 of Pods, but it is outside of the scope of this tutorial. Scaling to zero is also
 possible, and it will terminate all Pods of the specified Deployment.
 -->
 对 Deployment 横向扩容将保证新的 Pod 被创建并调度到有可用资源的 Node 上，
 扩容会将 Pod 数量增加至新的预期状态。
-Kubernetes 还支持 Pod 的[自动扩缩容](/zh-cn/docs/tasks/run-application/horizontal-pod-autoscale/)，
+Kubernetes 还支持 Pod 的[自动扩缩容](/zh-cn/docs/concepts/workloads/autoscaling/)，
 但这并不在本教程的讨论范围内。
-将 Pods 数量收缩到 0 也是可以的，这会终止指定 Deployment 上所有的 Pod。
+将 Pod 数量收缩到 0 也是可以的，这会终止指定 Deployment 上所有的 Pod。
 
 <!--
 Running multiple instances of an application will require a way to distribute the
@@ -182,22 +193,23 @@ Notice that the name of the ReplicaSet is always formatted as
 The random string is randomly generated and uses the pod-template-hash as a seed.
 
 Two important columns of this output are:
-
-* _DESIRED_ displays the desired number of replicas of the application, which you
-define when you create the Deployment. This is the desired state.
-* _CURRENT_ displays how many replicas are currently running.
-Next, let’s scale the Deployment to 4 replicas. We’ll use the `kubectl scale` command,
-followed by the Deployment type, name and desired number of instances:
 -->
 注意 ReplicaSet 名称总是遵循 <nobr>[DEPLOYMENT-NAME]-[RANDOM-STRING]</nobr> 的格式。
 随机字符串是使用 `pod-template-hash` 作为种子随机生成的。
 
 两个重要的列是：
+<!--
+* _DESIRED_ displays the desired number of replicas of the application, which you
+define when you create the Deployment. This is the desired state.
+* _CURRENT_ displays how many replicas are currently running.
 
+Next, let’s scale the Deployment to 4 replicas. We’ll use the `kubectl scale` command,
+followed by the Deployment type, name and desired number of instances:
+-->
 * **DESIRED** 显示期望应用具有的副本数量，在你创建 Deployment 时要定义这个值。这是期望的状态。
 * **CURRENT** 显示当前正在运行的副本数量。
 
-接下来，让我们扩容 Deployment 到 4 个副本。
+接下来，让我们将 Deployment 扩容到 4 个副本。
 我们将使用 `kubectl scale` 命令，后面给出 Deployment 类别、名称和预期的实例数量：
 
 ```shell
@@ -341,7 +353,7 @@ kubectl scale deployments/kubernetes-bootcamp --replicas=2
 <!--
 List the Deployments to check if the change was applied with the `get deployments` subcommand:
 -->
-要检查更改是否已应用，可使用 `get deployments` 子命令
+要检查更改是否已应用，可使用 `get deployments` 子命令：
 
 ```shell
 kubectl get deployments
@@ -370,5 +382,5 @@ This confirms that 2 Pods were terminated.
 * Learn more about [Autoscaling](/docs/concepts/workloads/autoscaling/).
 -->
 * [滚动更新](/zh-cn/docs/tutorials/kubernetes-basics/update/update-intro/)教程。
-* 了解更多关于[ReplicaSet](/zh-cn/docs/concepts/workloads/controllers/replicaset/)。
+* 了解更多关于 [ReplicaSet](/zh-cn/docs/concepts/workloads/controllers/replicaset/)。
 * 了解更多关于[自动伸缩](/zh-cn/docs/concepts/workloads/autoscaling/)。

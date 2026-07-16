@@ -206,17 +206,24 @@ ResourceQuota in that namespace.
 当命名空间中存在一个 ResourceQuota 对象时，对于该命名空间而言，资源配额就是开启的。
 
 <!--
-## Compute Resource Quota
+## Types of resource quota
+
+The ResourceQuota mechanism lets you enforce different kinds of limits. This
+section describes the types of limit that you can enforce.
+
+### Quota for infrastructure resources {#compute-resource-quota}
 
 You can limit the total sum of
 [compute resources](/docs/concepts/configuration/manage-resources-containers/)
 that can be requested in a given namespace.
 -->
-## 计算资源配额  {#compute-resource-quota}
+## 资源配额的类型 {#types-of-resource-quota}
 
-用户可以对给定命名空间下的可被请求的
-[计算资源](/zh-cn/docs/concepts/configuration/manage-resources-containers/)
-总量进行限制。
+ResourceQuota 机制允许你执行不同类别的限制。本节说明你可以执行的限制类型。
+
+### 基础设施资源的配额  {#compute-resource-quota}
+
+用户可以对给定命名空间下的可被请求的[计算资源](/zh-cn/docs/concepts/configuration/manage-resources-containers/)总量进行限制。
 
 <!--
 The following resource types are supported:
@@ -245,16 +252,15 @@ The following resource types are supported:
 | `memory` | 与 `requests.memory` 相同。 |
 
 <!--
-### Resource Quota For Extended Resources
+### Quota for extended resources
 
 In addition to the resources mentioned above, in release 1.10, quota support for
 [extended resources](/docs/concepts/configuration/manage-resources-containers/#extended-resources) is added.
 -->
-### 扩展资源的资源配额  {#resource-quota-for-extended-resources}
+### 扩展资源的配额  {#quota-for-extended-resources}
 
 除上述资源外，在 Kubernetes 1.10 版本中，
-还添加了对[扩展资源](/zh-cn/docs/concepts/configuration/manage-resources-containers/#extended-resources)
-的支持。
+还添加了对[扩展资源](/zh-cn/docs/concepts/configuration/manage-resources-containers/#extended-resources)的支持。
 
 <!--
 As overcommit is not allowed for extended resources, it makes no sense to specify both `requests`
@@ -279,19 +285,67 @@ See [Viewing and Setting Quotas](#viewing-and-setting-quotas) for more details.
 有关更多详细信息，请参阅[查看和设置配额](#viewing-and-setting-quotas)。
 
 <!--
-## Storage Resource Quota
+### Quota for DRA resource claims
 
-You can limit the total sum of [storage resources](/docs/concepts/storage/persistent-volumes/)
+DRA (Dynamic Resource Allocation) resource claims can request DRA resources by device class. For an example
+device class named `examplegpu`, you want to limit the total number of GPUs requested in a namespace to 4,
+you can define a quota as follows:
+-->
+### DRA 资源申领的配额  {#quota-for-dra-resource-claims}
+
+DRA（动态资源分配）资源申领可以按设备类（device class）请求 DRA 资源。
+例如对于一个名为 `examplegpu` 的设备类，如果你希望将一个命名空间中所请求的 GPU 总数限制为 4 个，
+你可以这样定义配额：
+
+* `examplegpu.deviceclass.resource.k8s.io/devices: 4`
+
+<!--
+When [Extended Resource allocation by DRA](/docs/concepts/scheduling-eviction/dynamic-resource-allocation/#extended-resource)
+is enabled, the same device class named `examplegpu` can be requested via extended resource either explicitly
+when the device class's ExtendedResourceName field is given, say, `example.com/gpu`, then you can define a quota as follows:
+-->
+当启用[通过 DRA 进行扩展资源分配](/zh-cn/docs/concepts/scheduling-eviction/dynamic-resource-allocation/#extended-resource)时，
+名为 `examplegpu` 的同一设备类可以通过扩展资源来请求，
+其方式既可以是显式地（通过设备类的 `ExtendedResourceName` 字段，例如设置为 `example.com/gpu`），
+此时你可以这样定义配额：
+
+* `requests.example.com/gpu: 4`
+
+<!--
+or implicitly using the derived extended resource name from device class name `examplegpu`, you can define
+a quota as follows:
+-->
+也可以是隐式的，使用从设备类名 `examplegpu` 派生而来的扩展资源名，此时可以这样定义配额：
+
+* `requests.deviceclass.resource.kubernetes.io/examplegpu: 4`
+
+<!--
+All devices requested from resource claims or extended resources are counted towards all three quotas
+listed above. The extended resource quota e.g. `requests.example.com/gpu: 4`, also counts the devices provided
+by device plugin.
+-->
+所有从资源申领或扩展资源中请求的设备都会被计入上述三种配额。
+扩展资源配额（例如 `requests.example.com/gpu: 4`）也会计入由设备插件所提供的设备。
+
+<!--
+See [Viewing and Setting Quotas](#viewing-and-setting-quotas) for more details.
+-->
+有关更多详细信息，请参阅[查看和设置配额](#viewing-and-setting-quotas)。
+
+<!--
+### Quota for storage
+
+You can limit the total sum of [storage](/docs/concepts/storage/persistent-volumes/) for volumes
 that can be requested in a given namespace.
 
-In addition, you can limit consumption of storage resources based on associated storage-class.
+In addition, you can limit consumption of storage resources based on associated
+[StorageClass](/docs/concepts/storage/storage-classes/).
 -->
-## 存储资源配额  {#storage-resource-quota}
+### 存储的配额  {#quota-for-storage}
 
-用户可以对给定命名空间下的[存储资源](/zh-cn/docs/concepts/storage/persistent-volumes/)
-总量进行限制。
+你可以对给定命名空间下可以请求的[存储卷](/zh-cn/docs/concepts/storage/persistent-volumes/)总量进行限制。
 
-此外，还可以根据相关的存储类（Storage Class）来限制存储资源的消耗。
+此外，你还可以基于关联的 [StorageClass](/zh-cn/docs/concepts/storage/storage-classes/) 来限制存储资源的消耗。
 
 <!--
 | Resource Name | Description |
@@ -319,9 +373,11 @@ a `bronze` StorageClass, you can define a quota as follows:
 * `bronze.storageclass.storage.k8s.io/requests.storage: 100Gi`
 
 <!--
-In release 1.8, quota support for local ephemeral storage is added as an alpha feature:
+#### Quota for local ephemeral storage
 -->
-在 Kubernetes 1.8 版本中，本地临时存储的配额支持已经是 Alpha 功能：
+#### 本地临时存储的配额
+
+{{< feature-state for_k8s_version="v1.8" state="alpha" >}}
 
 <!--
 | Resource Name | Description |
@@ -340,39 +396,81 @@ In release 1.8, quota support for local ephemeral storage is added as an alpha f
 <!--
 When using a CRI container runtime, container logs will count against the ephemeral storage quota.
 This can result in the unexpected eviction of pods that have exhausted their storage quotas.
+
 Refer to [Logging Architecture](/docs/concepts/cluster-administration/logging/) for details.
 -->
 如果所使用的是 CRI 容器运行时，容器日志会被计入临时存储配额，
 这可能会导致存储配额耗尽的 Pod 被意外地驱逐出节点。
+
 参考[日志架构](/zh-cn/docs/concepts/cluster-administration/logging/)了解详细信息。
 {{< /note >}}
 
 <!--
-## Object Count Quota
+### Quota on object count
 
-You can set quota for *the total number of one particular resource kind* in the Kubernetes API,
+You can set quota for *the total number of one particular {{< glossary_tooltip text="resource" term_id="api-resource" >}} kind* in the Kubernetes API,
 using the following syntax:
 
-* `count/<resource>.<group>` for resources from non-core groups
-* `count/<resource>` for resources from the core group
+* `count/<resource>.<group>` for resources from non-core API groups
+* `count/<resource>` for resources from the core API group
 -->
-## 对象数量配额  {#object-count-quota}
+### 对象数量的配额  {#quota-on-object-count}
 
-你可以使用以下语法为 Kubernetes API 中“一种特定资源类型的总数”设置配额：
+你可以使用以下语法为 Kubernetes API
+中**一种特定{{< glossary_tooltip text="资源" term_id="api-resource" >}}类型的总数**设置配额：
 
-* `count/<resource>.<group>`：用于非核心（core）组的资源
-* `count/<resource>`：用于核心组的资源
+* `count/<resource>.<group>`：用于非核心 API 组的资源
+* `count/<resource>`：用于核心 API 组的资源
 
 <!--
-Here is an example set of resources users may want to put under object count quota:
--->
-这是用户可能希望利用对象计数配额来管理的一组资源示例：
+For example, the PodTemplate API is in the core API group and so if you want to limit the number of
+PodTemplate objects in a namespace, you use `count/podtemplates`.
 
+These types of quotas are useful to protect against exhaustion of control plane storage. For example, you may
+want to limit the number of Secrets in a server given their large size. Too many Secrets in a cluster can
+actually prevent servers and controllers from starting. You can set a quota for Jobs to protect against
+a poorly configured CronJob. CronJobs that create too many Jobs in a namespace can lead to a denial of service.
+-->
+例如，PodTemplate API 属于核心 API 组，因此如果你想限制某个命名空间中的
+PodTemplate 对象的数量，你可以使用 `count/podtemplates`。
+
+这类配额非常有助于防止控制平面存储资源耗尽。
+例如，由于某台服务器上的 Secret 较大，你可能希望对其进行限制。
+集群中 Secret 过多实际上可能导致服务器和控制器无法启动。
+你也可以为 Job 设置配额，以防止出现配置不当的 CronJob。
+某些 CronJob 如果在一个命名空间中创建了过多的 Job，可能会引发 DoS 攻击。
+
+<!--
+If you define a quota this way, it applies to Kubernetes' APIs that are part of the API server, and
+to any custom resources backed by a CustomResourceDefinition.
+For example, to create a quota on a `widgets` custom resource in the `example.com` API group,
+use `count/widgets.example.com`.
+If you use [API aggregation](/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/) to
+add additional, custom APIs that are not defined as CustomResourceDefinitions, the core Kubernetes
+control plane does not enforce quota for the aggregated API. The extension API server is expected to
+provide quota enforcement if that's appropriate for the custom API.
+-->
+如果你以这种方式定义配额，它将应用于属于 API 服务器一部分的 Kubernetes API，以及 CustomResourceDefinition
+支持的任何自定义资源。例如，要在 `example.com` API 组中创建 `widgets` 定制资源的配额，可以使用 `count/widgets.example.com`。
+如果你使用[聚合 API](/zh-cn/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/)
+添加未定义为 CustomResourceDefinitions 的其他自定义 API，则核心 Kubernetes 控制平面不会对聚合 API 实施配额管理。
+如果合适，扩展 API 服务器需要为自定义 API 提供配额管理。
+
+<!--
+##### Generic syntax {#resource-quota-object-count-generic}
+
+This is a list of common examples of object kinds that you may want to put under object count quota,
+listed by the configuration string that you would use.
+-->
+##### 通用语法   {#resource-quota-object-count-generic}
+
+以下是一些常见对象类别的示例，建议你为这些对象设置数量配额。每一项后面列出了相应的配置字符串：
+
+* `count/pods`
 * `count/persistentvolumeclaims`
 * `count/services`
 * `count/secrets`
 * `count/configmaps`
-* `count/replicationcontrollers`
 * `count/deployments.apps`
 * `count/replicasets.apps`
 * `count/statefulsets.apps`
@@ -380,44 +478,14 @@ Here is an example set of resources users may want to put under object count quo
 * `count/cronjobs.batch`
 
 <!--
-If you define a quota this way, it applies to Kubernetes' APIs that are part of the API server, and
-to any custom resources backed by a CustomResourceDefinition. If you use
-[API aggregation](/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/) to
-add additional, custom APIs that are not defined as CustomResourceDefinitions, the core Kubernetes
-control plane does not enforce quota for the aggregated API. The extension API server is expected to
-provide quota enforcement if that's appropriate for the custom API.
-For example, to create a quota on a `widgets` custom resource in the `example.com` API group, use `count/widgets.example.com`.
--->
-如果你以这种方式定义配额，它将应用于属于 API 服务器一部分的 Kubernetes API，以及 CustomResourceDefinition
-支持的任何自定义资源。
-如果你使用[聚合 API](/zh-cn/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/)
-添加未定义为 CustomResourceDefinitions 的其他自定义 API，则核心 Kubernetes 控制平面不会对聚合 API 实施配额管理。
-如果合适，扩展 API 服务器需要为自定义 API 提供配额管理。
-例如，要对 `example.com` API 组中的自定义资源 `widgets` 设置配额，请使用
-`count/widgets.example.com`。
+##### Specialized syntax {#resource-quota-object-count-specialized}
 
-<!--
-When using such a resource quota (nearly for all object kinds), an object is charged
-against the quota if the object kind exists (is defined) in the control plane.
-These types of quotas are useful to protect against exhaustion of storage resources. For example, you may
-want to limit the number of Secrets in a server given their large size. Too many Secrets in a cluster can
-actually prevent servers and controllers from starting. You can set a quota for Jobs to protect against
-a poorly configured CronJob. CronJobs that create too many Jobs in a namespace can lead to a denial of service.
--->
-当使用这样的资源配额（几乎涵盖所有对象类别）时，如果对象类别在控制平面中已存在（已定义），
-则该对象管理会参考配额设置。
-这些类型的配额有助于防止存储资源耗尽。例如，用户可能想根据服务器的存储能力来对服务器中
-Secret 的数量进行配额限制。
-集群中存在过多的 Secret 实际上会导致服务器和控制器无法启动。
-用户可以选择对 Job 进行配额管理，以防止配置不当的 CronJob 在某命名空间中创建太多
-Job 而导致集群拒绝服务。
-
-<!--
-There is another syntax only to set the same type of quota for certain resources.
+There is another syntax only to set the same type of quota, that only works for certain API kinds.
 The following types are supported:
 -->
-还有另一种语法仅用于为某些资源设置相同类型的配额。
+##### 特殊语法   {#resource-quota-object-count-specialized}
 
+还有另一种语法只能设置相同类型的配额，只对某些 API 类别起作用。
 支持以下类型：
 
 <!--
@@ -459,701 +527,6 @@ exhausts the cluster's supply of Pod IPs.
 You can find more examples on [Viewing and Setting Quotas](#viewing-and-setting-quotas).
 -->
 你可以在[查看和设置配额](#viewing-and-setting-quotas)一节查看更多示例。
-
-<!--
-## Quota Scopes
-
-Each quota can have an associated set of `scopes`. A quota will only measure usage for a resource if it matches
-the intersection of enumerated scopes.
--->
-## 配额作用域   {#quota-scopes}
-
-每个配额都有一组相关的 `scope`（作用域），配额只会对作用域内的资源生效。
-配额机制仅统计所列举的作用域的交集中的资源用量。
-
-<!--
-When a scope is added to the quota, it limits the number of resources it supports to those that pertain to the scope.
-Resources specified on the quota outside of the allowed set results in a validation error.
--->
-当一个作用域被添加到配额中后，它会对作用域相关的资源数量作限制。
-如配额中指定了允许（作用域）集合之外的资源，会导致验证错误。
-
-<!--
-| Scope | Description |
-| ----- | ----------- |
-| `Terminating` | Match pods where `.spec.activeDeadlineSeconds` >= `0` |
-| `NotTerminating` | Match pods where `.spec.activeDeadlineSeconds` is `nil` |
-| `BestEffort` | Match pods that have best effort quality of service. |
-| `NotBestEffort` | Match pods that do not have best effort quality of service. |
-| `PriorityClass` | Match pods that references the specified [priority class](/docs/concepts/scheduling-eviction/pod-priority-preemption). |
-| `CrossNamespacePodAffinity` | Match pods that have cross-namespace pod [(anti)affinity terms](/docs/concepts/scheduling-eviction/assign-pod-node). |
-| `VolumeAttributesClass` | Match persistentvolumeclaims that references the specified [volume attributes class](/docs/concepts/storage/volume-attributes-classes). |
--->
-| 作用域 | 描述 |
-| ----- | ----------- |
-| `Terminating` | 匹配所有 `spec.activeDeadlineSeconds` 不小于 0 的 Pod。 |
-| `NotTerminating` | 匹配所有 `spec.activeDeadlineSeconds` 是 nil 的 Pod。 |
-| `BestEffort` | 匹配所有 Qos 是 BestEffort 的 Pod。 |
-| `NotBestEffort` | 匹配所有 Qos 不是 BestEffort 的 Pod。 |
-| `PriorityClass` | 匹配所有引用了所指定的[优先级类](/zh-cn/docs/concepts/scheduling-eviction/pod-priority-preemption)的 Pod。 |
-| `CrossNamespacePodAffinity` | 匹配那些设置了跨名字空间[（反）亲和性条件](/zh-cn/docs/concepts/scheduling-eviction/assign-pod-node)的 Pod。 |
-| `VolumeAttributesClass` | 匹配引用了指定[卷属性类](/zh-cn/docs/concepts/storage/volume-attributes-classes)的 PersistentVolumeClaim。 |
-
-<!--
-The `BestEffort` scope restricts a quota to tracking the following resource:
-
-* `pods`
-
-The `Terminating`, `NotTerminating`, `NotBestEffort` and `PriorityClass`
-scopes restrict a quota to tracking the following resources:
--->
-`BestEffort` 作用域限制配额跟踪以下资源：
-
-* `pods`
-
-`Terminating`、`NotTerminating`、`NotBestEffort` 和 `PriorityClass` 这些作用域限制配额跟踪以下资源：
-
-* `pods`
-* `cpu`
-* `memory`
-* `requests.cpu`
-* `requests.memory`
-* `limits.cpu`
-* `limits.memory`
-
-<!--
-Note that you cannot specify both the `Terminating` and the `NotTerminating`
-scopes in the same quota, and you cannot specify both the `BestEffort` and
-`NotBestEffort` scopes in the same quota either.
-
-The `scopeSelector` supports the following values in the `operator` field:
--->
-需要注意的是，你不可以在同一个配额对象中同时设置 `Terminating` 和 `NotTerminating`
-作用域，你也不可以在同一个配额中同时设置 `BestEffort` 和 `NotBestEffort`
-作用域。
-
-`scopeSelector` 支持在 `operator` 字段中使用以下值：
-
-* `In`
-* `NotIn`
-* `Exists`
-* `DoesNotExist`
-
-<!--
-When using one of the following values as the `scopeName` when defining the
-`scopeSelector`, the `operator` must be `Exists`.
--->
-定义 `scopeSelector` 时，如果使用以下值之一作为 `scopeName` 的值，则对应的
-`operator` 只能是 `Exists`。
-
-* `Terminating`
-* `NotTerminating`
-* `BestEffort`
-* `NotBestEffort`
-
-<!--
-If the `operator` is `In` or `NotIn`, the `values` field must have at least
-one value. For example:
--->
-如果 `operator` 是 `In` 或 `NotIn` 之一，则 `values` 字段必须至少包含一个值。
-例如：
-
-```yaml
-  scopeSelector:
-    matchExpressions:
-      - scopeName: PriorityClass
-        operator: In
-        values:
-          - middle
-```
-
-<!--
-If the `operator` is `Exists` or `DoesNotExist`, the `values` field must *NOT* be
-specified.
--->
-如果 `operator` 为 `Exists` 或 `DoesNotExist`，则**不**可以设置 `values` 字段。
-
-<!--
-### Resource Quota Per PriorityClass
--->
-### 基于优先级类（PriorityClass）来设置资源配额  {#resource-quota-per-priorityclass}
-
-{{< feature-state for_k8s_version="v1.17" state="stable" >}}
-
-<!--
-Pods can be created at a specific [priority](/docs/concepts/scheduling-eviction/pod-priority-preemption/#pod-priority).
-You can control a pod's consumption of system resources based on a pod's priority, by using the `scopeSelector`
-field in the quota spec.
--->
-Pod 可以创建为特定的[优先级](/zh-cn/docs/concepts/scheduling-eviction/pod-priority-preemption/#pod-priority)。
-通过使用配额规约中的 `scopeSelector` 字段，用户可以根据 Pod 的优先级控制其系统资源消耗。
-
-<!--
-A quota is matched and consumed only if `scopeSelector` in the quota spec selects the pod.
--->
-仅当配额规约中的 `scopeSelector` 字段选择到某 Pod 时，配额机制才会匹配和计量 Pod 的资源消耗。
-
-<!--
-When quota is scoped for priority class using `scopeSelector` field, quota object
-is restricted to track only following resources:
--->
-如果配额对象通过 `scopeSelector` 字段设置其作用域为优先级类，
-则配额对象只能跟踪以下资源：
-
-* `pods`
-* `cpu`
-* `memory`
-* `ephemeral-storage`
-* `limits.cpu`
-* `limits.memory`
-* `limits.ephemeral-storage`
-* `requests.cpu`
-* `requests.memory`
-* `requests.ephemeral-storage`
-
-<!--
-This example creates a quota object and matches it with pods at specific priorities. The example
-works as follows:
--->
-本示例创建一个配额对象，并将其与具有特定优先级的 Pod 进行匹配，其工作方式如下：
-
-<!--
-- Pods in the cluster have one of the three priority classes, "low", "medium", "high".
-- One quota object is created for each priority.
--->
-- 集群中的 Pod 可取三个优先级类之一，即 "low"、"medium"、"high"。
-- 为每个优先级创建一个配额对象。
-
-<!--
-Save the following YAML to a file `quota.yaml`.
--->
-将以下 YAML 保存到文件 `quota.yaml` 中。
-
-{{% code_sample file="policy/quota.yaml" %}}
-
-<!--
-Apply the YAML using `kubectl create`.
--->
-使用 `kubectl create` 命令运行以下操作。
-
-```shell
-kubectl create -f ./quota.yaml
-```
-
-```
-resourcequota/pods-high created
-resourcequota/pods-medium created
-resourcequota/pods-low created
-```
-
-<!--
-Verify that `Used` quota is `0` using `kubectl describe quota`.
--->
-使用 `kubectl describe quota` 操作验证配额的 `Used` 值为 `0`。
-
-```shell
-kubectl describe quota
-```
-
-```
-Name:       pods-high
-Namespace:  default
-Resource    Used  Hard
---------    ----  ----
-cpu         0     1k
-memory      0     200Gi
-pods        0     10
-
-
-Name:       pods-low
-Namespace:  default
-Resource    Used  Hard
---------    ----  ----
-cpu         0     5
-memory      0     10Gi
-pods        0     10
-
-
-Name:       pods-medium
-Namespace:  default
-Resource    Used  Hard
---------    ----  ----
-cpu         0     10
-memory      0     20Gi
-pods        0     10
-```
-
-<!--
-Create a pod with priority "high". Save the following YAML to a
-file `high-priority-pod.yaml`.
--->
-创建优先级为 "high" 的 Pod。
-将以下 YAML 保存到文件 `high-priority-pod.yaml` 中。
-
-{{% code_sample file="policy/high-priority-pod.yaml" %}}
-
-<!--
-Apply it with `kubectl create`.
--->
-使用 `kubectl create` 运行以下操作。
-
-```shell
-kubectl create -f ./high-priority-pod.yaml
-```
-
-<!--
-Verify that "Used" stats for "high" priority quota, `pods-high`, has changed and that
-the other two quotas are unchanged.
--->
-确认 "high" 优先级配额 `pods-high` 的 "Used" 统计信息已更改，并且其他两个配额未更改。
-
-```shell
-kubectl describe quota
-```
-
-```
-Name:       pods-high
-Namespace:  default
-Resource    Used  Hard
---------    ----  ----
-cpu         500m  1k
-memory      10Gi  200Gi
-pods        1     10
-
-
-Name:       pods-low
-Namespace:  default
-Resource    Used  Hard
---------    ----  ----
-cpu         0     5
-memory      0     10Gi
-pods        0     10
-
-
-Name:       pods-medium
-Namespace:  default
-Resource    Used  Hard
---------    ----  ----
-cpu         0     10
-memory      0     20Gi
-pods        0     10
-```
-
-<!--
-### Cross-namespace Pod Affinity Quota
--->
-### 跨名字空间的 Pod 亲和性配额   {#cross-namespace-pod-affinity-quota}
-
-{{< feature-state for_k8s_version="v1.24" state="stable" >}}
-
-<!--
-Operators can use `CrossNamespacePodAffinity` quota scope to limit which namespaces are allowed to
-have pods with affinity terms that cross namespaces. Specifically, it controls which pods are allowed
-to set `namespaces` or `namespaceSelector` fields in pod affinity terms.
--->
-集群运维人员可以使用 `CrossNamespacePodAffinity`
-配额作用域来限制哪个名字空间中可以存在包含跨名字空间亲和性规则的 Pod。
-更为具体一点，此作用域用来配置哪些 Pod 可以在其 Pod 亲和性规则中设置
-`namespaces` 或 `namespaceSelector` 字段。
-
-<!--
-Preventing users from using cross-namespace affinity terms might be desired since a pod
-with anti-affinity constraints can block pods from all other namespaces
-from getting scheduled in a failure domain.
--->
-禁止用户使用跨名字空间的亲和性规则可能是一种被需要的能力，
-因为带有反亲和性约束的 Pod 可能会阻止所有其他名字空间的 Pod 被调度到某失效域中。
-
-<!--
-Using this scope operators can prevent certain namespaces (`foo-ns` in the example below)
-from having pods that use cross-namespace pod affinity by creating a resource quota object in
-that namespace with `CrossNamespacePodAffinity` scope and hard limit of 0:
--->
-使用此作用域操作符可以避免某些名字空间（例如下面例子中的 `foo-ns`）运行特别的 Pod，
-这类 Pod 使用跨名字空间的 Pod 亲和性约束，在该名字空间中创建了作用域为
-`CrossNamespacePodAffinity` 的、硬性约束为 0 的资源配额对象。
-
-```yaml
-apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: disable-cross-namespace-affinity
-  namespace: foo-ns
-spec:
-  hard:
-    pods: "0"
-  scopeSelector:
-    matchExpressions:
-    - scopeName: CrossNamespacePodAffinity
-      operator: Exists
-```
-
-<!--
-If operators want to disallow using `namespaces` and `namespaceSelector` by default, and
-only allow it for specific namespaces, they could configure `CrossNamespacePodAffinity`
-as a limited resource by setting the kube-apiserver flag `--admission-control-config-file`
-to the path of the following configuration file:
--->
-如果集群运维人员希望默认禁止使用 `namespaces` 和 `namespaceSelector`，
-而仅仅允许在特定命名空间中这样做，他们可以将 `CrossNamespacePodAffinity`
-作为一个被约束的资源。方法是为 `kube-apiserver` 设置标志
-`--admission-control-config-file`，使之指向如下的配置文件：
-
-```yaml
-apiVersion: apiserver.config.k8s.io/v1
-kind: AdmissionConfiguration
-plugins:
-- name: "ResourceQuota"
-  configuration:
-    apiVersion: apiserver.config.k8s.io/v1
-    kind: ResourceQuotaConfiguration
-    limitedResources:
-    - resource: pods
-      matchScopes:
-      - scopeName: CrossNamespacePodAffinity
-        operator: Exists
-```
-
-<!--
-With the above configuration, pods can use `namespaces` and `namespaceSelector` in pod affinity only
-if the namespace where they are created have a resource quota object with
-`CrossNamespacePodAffinity` scope and a hard limit greater than or equal to the number of pods using those fields.
--->
-基于上面的配置，只有名字空间中包含作用域为 `CrossNamespacePodAffinity`
-且硬性约束大于或等于使用 `namespaces` 和 `namespaceSelector` 字段的 Pod
-个数时，才可以在该名字空间中继续创建在其 Pod 亲和性规则中设置 `namespaces`
-或 `namespaceSelector` 的新 Pod。
-
-<!--
-### Resource Quota Per VolumeAttributesClass
--->
-### 按 VolumeAttributesClass 设置资源配额
-
-{{< feature-state feature_gate_name="VolumeAttributesClass" >}}
-
-<!--
-PersistentVolumeClaims can be created with a specific [volume attributes class](/docs/concepts/storage/volume-attributes-classes/), and might be modified after creation. You can control a PVC's consumption of storage resources based on the associated volume attributes classes, by using the `scopeSelector` field in the quota spec.
-
-The PVC references the associated volume attributes class by the following fields:
--->
-PersistentVolumeClaim（PVC）可以在创建时指定一个特定的[卷属性类](/zh-cn/docs/concepts/storage/volume-attributes-classes/)，
-并且在创建后也可以进行修改。你可以通过在配额规约中使用 `scopeSelector`
-字段，基于关联的卷属性类来控制 PVC 对存储资源的消耗。
-
-PVC 通过以下字段引用关联的卷属性类：
-
-* `spec.volumeAttributesClassName`
-* `status.currentVolumeAttributesClassName`
-* `status.modifyVolumeStatus.targetVolumeAttributesClassName`
-
-<!--
-A quota is matched and consumed only if `scopeSelector` in the quota spec selects the PVC.
-
-When the quota is scoped for the volume attributes class using the `scopeSelector` field, the quota object is restricted to track only the following resources:
--->
-仅当配额规约中的 `scopeSelector` 选择 PVC 时，配额才会被匹配并计入消耗。
-
-当使用 `scopeSelector` 字段为卷属性类限定配额范围时，配额对象只会跟踪以下资源：
-
-* `persistentvolumeclaims`
-* `requests.storage`
-
-<!--
-This example creates a quota object and matches it with PVC at specific volume attributes classes. The example works as follows:
-
-- PVCs in the cluster have at least one of the three volume attributes classes, "gold", "silver", "copper".
-- One quota object is created for each volume attributes class.
-
-Save the following YAML to a file `quota-vac.yaml`.
--->
-以下示例创建一个配额对象，并将其与具有特定卷属性类的 PVC 进行匹配。示例逻辑如下：
-
-- 集群中的 PVC 至少属于三个卷属性类之一：“gold”、“silver”、“copper”。
-- 为每个卷属性类分别创建一个配额对象。
-
-将以下 YAML 保存为文件 `quota-vac.yaml`：
-
-{{% code_sample file="policy/quota-vac.yaml" %}}
-
-<!--
-Apply the YAML using `kubectl create`.
--->
-使用 `kubectl create` 应用 YAML 文件：
-
-```shell
-kubectl create -f ./quota-vac.yaml
-```
-
-```
-resourcequota/pvcs-gold created
-resourcequota/pvcs-silver created
-resourcequota/pvcs-copper created
-```
-
-<!--
-Verify that `Used` quota is `0` using `kubectl describe quota`.
--->
-使用 `kubectl describe quota` 验证 `Used` 配额为 `0`：
-
-```shell
-kubectl describe quota
-```
-
-```
-Name:                   pvcs-gold
-Namespace:              default
-Resource                Used  Hard
---------                ----  ----
-persistentvolumeclaims  0     10
-requests.storage        0     10Gi
-
-
-Name:                   pvcs-silver
-Namespace:              default
-Resource                Used  Hard
---------                ----  ----
-persistentvolumeclaims  0     10
-requests.storage        0     20Gi
-
-
-Name:                   pvcs-copper
-Namespace:              default
-Resource                Used  Hard
---------                ----  ----
-persistentvolumeclaims  0     10
-requests.storage        0     30Gi
-```
-
-<!--
-Create a pvc with volume attributes class "gold". Save the following YAML to a file `gold-vac-pvc.yaml`.
--->
-创建一个卷属性类为 "gold" 的 PVC。将以下 YAML 保存为文件 `gold-vac-pvc.yaml`：
-
-{{% code_sample file="policy/gold-vac-pvc.yaml" %}}
-
-<!--
-Apply it with `kubectl create`.
--->
-使用 `kubectl create` 应用此 YAML：
-
-```shell
-kubectl create -f ./gold-vac-pvc.yaml
-```
-
-<!--
-Verify that "Used" stats for "gold" volume attributes class quota, `pvcs-gold` has changed and that the other two quotas are unchanged.
--->
-验证 “gold” 卷属性类配额的 "Used" 统计，`pvcs-gold` 已发生了变化，而另外两个配额没有变化：
-
-```shell
-kubectl describe quota
-```
-
-```
-Name:                   pvcs-gold
-Namespace:              default
-Resource                Used  Hard
---------                ----  ----
-persistentvolumeclaims  1     10
-requests.storage        2Gi   10Gi
-
-
-Name:                   pvcs-silver
-Namespace:              default
-Resource                Used  Hard
---------                ----  ----
-persistentvolumeclaims  0     10
-requests.storage        0     20Gi
-
-
-Name:                   pvcs-copper
-Namespace:              default
-Resource                Used  Hard
---------                ----  ----
-persistentvolumeclaims  0     10
-requests.storage        0     30Gi
-```
-
-<!--
-Once the PVC is bound, it is allowed to modify the desired volume attributes class. Let's change it to "silver" with kubectl patch.
--->
-一旦 PVC 被绑定，就允许修改预期卷属性类。使用 `kubectl patch` 将其修改为 "silver"：
-
-```shell
-kubectl patch pvc gold-vac-pvc --type='merge' -p '{"spec":{"volumeAttributesClassName":"silver"}}'
-```
-
-<!--
-Verify that "Used" stats for "silver" volume attributes class quota, `pvcs-silver` has changed, `pvcs-copper` is unchanged, and `pvcs-gold` might be unchanged or released, which depends on the PVC's status.
--->
-验证 “silver” 卷属性类配额的 “Used” 统计，`pvcs-silver` 已发生变化，
-`pvcs-copper` 没有变化，`pvcs-gold` 可能没有变化或已释放（具体取决于 PVC 的状态）：
-
-```shell
-kubectl describe quota
-```
-
-```
-Name:                   pvcs-gold
-Namespace:              default
-Resource                Used  Hard
---------                ----  ----
-persistentvolumeclaims  1     10
-requests.storage        2Gi   10Gi
-
-
-Name:                   pvcs-silver
-Namespace:              default
-Resource                Used  Hard
---------                ----  ----
-persistentvolumeclaims  1     10
-requests.storage        2Gi   20Gi
-
-
-Name:                   pvcs-copper
-Namespace:              default
-Resource                Used  Hard
---------                ----  ----
-persistentvolumeclaims  0     10
-requests.storage        0     30Gi
-```
-
-<!--
-Let's change it to "copper" with kubectl patch.
--->
-使用 `kubectl patch` 将其修改为 "copper"：
-
-```shell
-kubectl patch pvc gold-vac-pvc --type='merge' -p '{"spec":{"volumeAttributesClassName":"copper"}}'
-```
-
-<!--
-Verify that "Used" stats for "copper" volume attributes class quota, `pvcs-copper` has changed, `pvcs-silver` and `pvcs-gold` might be unchanged or released, which depends on the PVC's status.
--->
-验证 "copper" 卷属性类配额的 “Used” 统计，`pvcs-copper` 已经发生变化，
-`pvcs-silver` 和 `pvcs-gold` 可能没有变化或已释放（取决于 PVC 的状态）。
-
-```shell
-kubectl describe quota
-```
-
-```
-Name:                   pvcs-gold
-Namespace:              default
-Resource                Used  Hard
---------                ----  ----
-persistentvolumeclaims  1     10
-requests.storage        2Gi   10Gi
-
-
-Name:                   pvcs-silver
-Namespace:              default
-Resource                Used  Hard
---------                ----  ----
-persistentvolumeclaims  1     10
-requests.storage        2Gi   20Gi
-
-
-Name:                   pvcs-copper
-Namespace:              default
-Resource                Used  Hard
---------                ----  ----
-persistentvolumeclaims  1     10
-requests.storage        2Gi   30Gi
-```
-
-<!--
-Print the manifest of the PVC using the following command:
--->
-使用以下命令打印 PVC 的清单：
-
-```shell
-kubectl get pvc gold-vac-pvc -o yaml
-```
-
-<!--
-It might show the following output:
--->
-可能会显示如下输出：
-
-```yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: gold-vac-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 2Gi
-  storageClassName: default
-  volumeAttributesClassName: copper
-status:
-  accessModes:
-    - ReadWriteOnce
-  capacity:
-    storage: 2Gi
-  currentVolumeAttributesClassName: gold
-  phase: Bound
-  modifyVolumeStatus:
-    status: InProgress
-    targetVolumeAttributesClassName: silver
-  storageClassName: default
-```
-
-<!--
-Wait a moment for the volume modification to complete, then verify the quota again.
--->
-稍等片刻，待卷修改完成后，再次验证配额：
-
-```shell
-kubectl describe quota
-```
-
-```
-Name:                   pvcs-gold
-Namespace:              default
-Resource                Used  Hard
---------                ----  ----
-persistentvolumeclaims  0     10
-requests.storage        0     10Gi
-
-
-Name:                   pvcs-silver
-Namespace:              default
-Resource                Used  Hard
---------                ----  ----
-persistentvolumeclaims  0     10
-requests.storage        0     20Gi
-
-
-Name:                   pvcs-copper
-Namespace:              default
-Resource                Used  Hard
---------                ----  ----
-persistentvolumeclaims  1     10
-requests.storage        2Gi   30Gi
-```
-
-<!--
-## Requests compared to Limits {#requests-vs-limits}
-
-When allocating compute resources, each container may specify a request and a limit value for either CPU or memory.
-The quota can be configured to quota either value.
--->
-## 请求与限制的比较   {#requests-vs-limits}
-
-分配计算资源时，每个容器可以为 CPU 或内存指定请求和约束。
-配额可以针对二者之一进行设置。
-
-<!--
-If the quota has a value specified for `requests.cpu` or `requests.memory`, then it requires that every incoming
-container makes an explicit request for those resources. If the quota has a value specified for `limits.cpu` or `limits.memory`,
-then it requires that every incoming container specifies an explicit limit for those resources.
--->
-如果配额中指定了 `requests.cpu` 或 `requests.memory` 的值，则它要求每个容器都显式给出对这些资源的请求。
-同理，如果配额中指定了 `limits.cpu` 或 `limits.memory` 的值，那么它要求每个容器都显式设定对应资源的限制。
 
 <!--
 ## Viewing and Setting Quotas
@@ -1328,13 +701,462 @@ restrictions around nodes: pods from several namespaces may run on the same node
 注意：资源配额对集群资源总体进行划分，但它对节点没有限制：来自不同命名空间的 Pod 可能在同一节点上运行。
 
 <!--
-## Limit Priority Class consumption by default
+## Quota scopes
 
+Each quota can have an associated set of `scopes`. A quota will only measure usage for a resource if it matches
+the intersection of enumerated scopes.
+-->
+## 配额作用域   {#quota-scopes}
+
+每个配额都有一组相关的 `scope`（作用域），配额只会对作用域内的资源生效。
+配额机制仅统计所列举的作用域的交集中的资源用量。
+
+<!--
+When a scope is added to the quota, it limits the number of resources it supports to those that pertain to the scope.
+Resources specified on the quota outside of the allowed set results in a validation error.
+-->
+当一个作用域被添加到配额中后，它会对作用域相关的资源数量作限制。
+如配额中指定了允许（作用域）集合之外的资源，会导致验证错误。
+
+<!--
+Kubernetes {{< skew currentVersion >}} supports the following scopes:
+-->
+Kubernetes {{< skew currentVersion >}} 支持以下作用域：
+
+<!--
+| Scope | Description |
+| ----- | ----------- |
+| [`BestEffort`](#quota-scope-best-effort) | Match pods that have best effort quality of service. |
+| [`CrossNamespacePodAffinity`](#cross-namespace-pod-affinity-scope) | Match pods that have cross-namespace pod [(anti)affinity terms](/docs/concepts/scheduling-eviction/assign-pod-node). |
+| [`NotBestEffort`](#quota-scope-non-best-effort) | Match pods that do not have best effort quality of service. |
+| [`NotTerminating`](#quota-scope-non-terminating) | Match pods where `.spec.activeDeadlineSeconds` is `nil` |
+| [`PriorityClass`](#resource-quota-per-priorityclass) | Match pods that references the specified [priority class](/docs/concepts/scheduling-eviction/pod-priority-preemption). |
+| [`Terminating`](#quota-scope-terminating) | Match pods where `.spec.activeDeadlineSeconds` >= `0` |
+| [`VolumeAttributesClass`](#quota-scope-volume-attributes-class) | Match PersistentVolumeClaims that reference the specified [volume attributes class](/docs/concepts/storage/volume-attributes-classes). |
+-->
+| 作用域 | 描述 |
+| ----- | ----------- |
+| [`BestEffort`](#quota-scope-best-effort) | 匹配所有 QoS 是 BestEffort 的 Pod。 |
+| [`CrossNamespacePodAffinity`](#cross-namespace-pod-affinity-scope) | 匹配那些设置了跨名字空间[（反）亲和性条件](/zh-cn/docs/concepts/scheduling-eviction/assign-pod-node)的 Pod。 |
+| [`NotBestEffort`](#quota-scope-non-best-effort) | 匹配所有 QoS 不是 BestEffort 的 Pod。 |
+| [`NotTerminating`](#quota-scope-non-terminating) | 匹配所有 `spec.activeDeadlineSeconds` 是 nil 的 Pod。 |
+| [`PriorityClass`](#resource-quota-per-priorityclass) | 匹配所有引用了所指定的[优先级类](/zh-cn/docs/concepts/scheduling-eviction/pod-priority-preemption)的 Pod。 |
+| [`Terminating`](#quota-scope-terminating) | 匹配所有 `spec.activeDeadlineSeconds` 不小于 0 的 Pod。 |
+| [`VolumeAttributesClass`](#quota-scope-volume-attributes-class) | 匹配引用了指定[卷属性类](/zh-cn/docs/concepts/storage/volume-attributes-classes)的 PersistentVolumeClaim。 |
+
+<!--
+ResourceQuotas with a scope set can also have a optional `scopeSelector` field. You define one or more _match expressions_
+that specify an `operators` and, if relevant, a set of `values` to match. For example:
+
+```yaml
+  scopeSelector:
+    matchExpressions:
+      - scopeName: BestEffort # Match pods that have best effort quality of service
+        operator: Exists # optional; "Exists" is implied for BestEffort scope
+```
+-->
+设置了作用域的 ResourceQuota 还可以有一个可选的 `scopeSelector` 字段。
+你可以定义一个或多个**匹配表达式**，
+为其指定 `operator` 以及（如果相关）一组要匹配的 `values`。例如：
+
+```yaml
+  scopeSelector:
+    matchExpressions:
+      - scopeName: BestEffort # 匹配服务质量类为 BestEffort 的 Pod
+        operator: Exists # 可选；对于 BestEffort 作用域，默认使用 Exists
+```
+
+<!--
+The `scopeSelector` supports the following values in the `operator` field:
+-->
+`scopeSelector` 支持在 `operator` 字段中使用以下值：
+
+* `In`
+* `NotIn`
+* `Exists`
+* `DoesNotExist`
+
+<!--
+If the `operator` is `In` or `NotIn`, the `values` field must have at least
+one value. For example:
+-->
+如果 `operator` 是 `In` 或 `NotIn` 之一，则 `values` 字段必须至少包含一个值。
+例如：
+
+```yaml
+  scopeSelector:
+    matchExpressions:
+      - scopeName: PriorityClass
+        operator: In
+        values:
+          - middle
+```
+
+<!--
+If the `operator` is `Exists` or `DoesNotExist`, the `values` field must *NOT* be
+specified.
+-->
+如果 `operator` 为 `Exists` 或 `DoesNotExist`，则**不**可以设置 `values` 字段。
+
+<!--
+### Best effort Pods scope {#quota-scope-best-effort}
+
+This scope only tracks quota consumed by Pods.
+It only matches pods that have the [best effort](/docs/concepts/workloads/pods/pod-qos/#besteffort)
+[QoS class](/docs/concepts/workloads/pods/pod-qos/).
+
+The `operator` for a `scopeSelector` must be `Exists`.
+-->
+### BestEffort Pod 作用域  {#quota-scope-best-effort}
+
+此作用域仅跟踪 Pod 所消耗的配额。
+它只匹配具有 [BestEffort](/zh-cn/docs/concepts/workloads/pods/pod-qos/#besteffort)
+[QoS 类](/zh-cn/docs/concepts/workloads/pods/pod-qos/)的 Pod。
+
+`scopeSelector` 的 `operator` 必须是 `Exists`。
+
+<!--
+### Not-best-effort Pods scope {#quota-scope-non-best-effort}
+
+This scope only tracks quota consumed by Pods.
+It only matches pods that have the [Guaranteed](/docs/concepts/workloads/pods/pod-qos/#guaranteed)
+or [Burstable](/docs/concepts/workloads/pods/pod-qos/#burstable)
+[QoS class](/docs/concepts/workloads/pods/pod-qos/).
+
+The `operator` for a `scopeSelector` must be `Exists`.
+-->
+### 非 BestEffort Pod 作用域  {#quota-scope-non-best-effort}
+
+此作用域仅跟踪 Pod 所消耗的配额。
+它只匹配具有 [Guaranteed](/zh-cn/docs/concepts/workloads/pods/pod-qos/#guaranteed)
+或 [Burstable](/zh-cn/docs/concepts/workloads/pods/pod-qos/#burstable)
+[QoS 类](/zh-cn/docs/concepts/workloads/pods/pod-qos/)的 Pod。
+
+`scopeSelector` 的 `operator` 必须是 `Exists`。
+
+<!--
+### Non-terminating Pods scope {#quota-scope-non-terminating}
+
+This scope only tracks quota consumed by Pods that are not terminating. The `operator` for a `scopeSelector`
+must be `Exists`.
+
+A Pod is not terminating if the `.spec.activeDeadlineSeconds` field is unset.
+
+You can use a ResourceQuota with this scope to manage the following resources:
+-->
+### 非终止中 Pod 作用域  {#quota-scope-non-terminating}
+
+此作用域仅跟踪非终止中 Pod 所消耗的配额。`scopeSelector` 的 `operator` 必须是 `Exists`。
+
+如果 Pod 的 `.spec.activeDeadlineSeconds` 字段未设置，则该 Pod 处于非终止中状态。
+
+你可以使用具有此作用域的 ResourceQuota 来管理以下资源：
+
+* `count.pods`
+* `pods`
+* `cpu`
+* `memory`
+* `requests.cpu`
+* `requests.memory`
+* `limits.cpu`
+* `limits.memory`
+
+<!--
+### Terminating Pods scope {#quota-scope-terminating}
+
+This scope only tracks quota consumed by Pods that are terminating. The `operator` for a `scopeSelector`
+must be `Exists`.
+
+A Pod is considered as _terminating_ if the `.spec.activeDeadlineSeconds` field is set to any number.
+
+You can use a ResourceQuota with this scope to manage the following resources:
+-->
+### 终止中 Pod 作用域  {#quota-scope-terminating}
+
+此作用域仅跟踪终止中 Pod 所消耗的配额。`scopeSelector` 的 `operator` 必须是 `Exists`。
+
+如果 Pod 的 `.spec.activeDeadlineSeconds` 字段被设置为任何数字，则该 Pod 被视为**终止中**。
+
+你可以使用具有此作用域的 ResourceQuota 来管理以下资源：
+
+* `count.pods`
+* `pods`
+* `cpu`
+* `memory`
+* `requests.cpu`
+* `requests.memory`
+* `limits.cpu`
+* `limits.memory`
+
+<!--
+### Cross-namespace pod affinity scope
+-->
+### 跨名字空间的 Pod 亲和性作用域  {#cross-namespace-pod-affinity-scope}
+
+{{< feature-state for_k8s_version="v1.24" state="stable" >}}
+
+<!--
+You can use `CrossNamespacePodAffinity` [quota scope](#quota-scopes) to limit which namespaces are allowed to
+have pods with affinity terms that cross namespaces. Specifically, it controls which pods are allowed
+to set `namespaces` or `namespaceSelector` fields in pod [(anti)affinity terms](/docs/concepts/scheduling-eviction/assign-pod-node).
+-->
+你可以使用 `CrossNamespacePodAffinity` [配额作用域](#quota-scopes)来限制哪些名字空间允许带有跨名字空间亲和性条件的
+Pod 存在。
+更为具体一点，此作用域控制哪些 Pod 可以在 Pod
+[（反）亲和性条件](/zh-cn/docs/concepts/scheduling-eviction/assign-pod-node)中设置
+`namespaces` 或 `namespaceSelector` 字段。
+
+<!--
+Preventing users from using cross-namespace affinity terms might be desired since a pod
+with anti-affinity constraints can block pods from all other namespaces
+from getting scheduled in a failure domain.
+-->
+禁止用户使用跨名字空间的亲和性条件可能是一种被期望的能力，
+因为带有反亲和性约束的 Pod 可能会阻止所有其他名字空间的 Pod 被调度到某失效域中。
+
+<!--
+Using this scope, you (as a cluster administrator) can prevent certain namespaces - such as `foo-ns` in the example below -
+from having pods that use cross-namespace pod affinity. You configure this creating a ResourceQuota object in
+that namespace with `CrossNamespacePodAffinity` scope and hard limit of 0:
+-->
+使用此作用域，你（作为集群管理员）可以避免某些名字空间（例如下面例子中的 `foo-ns`）拥有使用跨名字空间 Pod 亲和性的 Pod。
+你可以通过在该名字空间中创建一个作用域为 `CrossNamespacePodAffinity` 且硬性约束为 0 的 ResourceQuota 对象进行配置：
+
+```yaml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: disable-cross-namespace-affinity
+  namespace: foo-ns
+spec:
+  hard:
+    pods: "0"
+  scopeSelector:
+    matchExpressions:
+    - scopeName: CrossNamespacePodAffinity
+      operator: Exists
+```
+
+<!--
+If you want to disallow using `namespaces` and `namespaceSelector` by default, and
+only allow it for specific namespaces, you could configure `CrossNamespacePodAffinity`
+as a limited resource by setting the kube-apiserver flag `--admission-control-config-file`
+to the path of the following configuration file:
+-->
+如果你希望默认禁止使用 `namespaces` 和 `namespaceSelector`，而仅仅允许在特定名字空间中这样做，
+你可以将 `CrossNamespacePodAffinity` 配置为受限资源。方法是为 `kube-apiserver` 设置标志
+`--admission-control-config-file`，使之指向如下的配置文件：
+
+```yaml
+apiVersion: apiserver.config.k8s.io/v1
+kind: AdmissionConfiguration
+plugins:
+- name: "ResourceQuota"
+  configuration:
+    apiVersion: apiserver.config.k8s.io/v1
+    kind: ResourceQuotaConfiguration
+    limitedResources:
+    - resource: pods
+      matchScopes:
+      - scopeName: CrossNamespacePodAffinity
+        operator: Exists
+```
+
+<!--
+With the above configuration, pods can use `namespaces` and `namespaceSelector` in pod affinity only
+if the namespace where they are created have a resource quota object with
+`CrossNamespacePodAffinity` scope and a hard limit greater than or equal to the number of pods using those fields.
+-->
+基于上面的配置，只有名字空间中包含作用域为 `CrossNamespacePodAffinity`
+且硬性约束大于或等于使用 `namespaces` 和 `namespaceSelector` 字段的 Pod
+个数时，才可以在该名字空间中继续创建在其 Pod 亲和性规则中设置 `namespaces`
+或 `namespaceSelector` 的新 Pod。
+
+<!--
+### PriorityClass scope {#resource-quota-per-priorityclass}
+-->
+### PriorityClass 作用域  {#resource-quota-per-priorityclass}
+
+{{< feature-state for_k8s_version="v1.17" state="stable" >}}
+
+<!--
+A ResourceQuota with a PriorityClass scope only matches Pods that have a particular
+[priority class](/docs/concepts/scheduling-eviction/pod-priority-preemption), and only
+if any `scopeSelector` in the quota spec selects a particular Pod.
+-->
+带有 PriorityClass 作用域的 ResourceQuota
+只会匹配具有特定[优先级类](/zh-cn/docs/concepts/scheduling-eviction/pod-priority-preemption)的
+Pod，并且仅在配额规约中的 `scopeSelector` 选择到某个特定 Pod 时才生效。
+
+<!--
+Pods can be created at a specific [priority](/docs/concepts/scheduling-eviction/pod-priority-preemption/#pod-priority).
+You can control a pod's consumption of system resources based on a pod's priority, by using the `scopeSelector`
+field in the quota spec.
+-->
+Pod 可以创建为特定的[优先级](/zh-cn/docs/concepts/scheduling-eviction/pod-priority-preemption/#pod-priority)。
+通过使用配额规约中的 `scopeSelector` 字段，你可以根据 Pod 的优先级控制其系统资源消耗。
+
+<!--
+When quota is scoped for PriorityClass using the `scopeSelector` field, the ResourceQuota
+can only track (and limit) the following resources:
+-->
+当通过 `scopeSelector` 字段为 PriorityClass 限定配额范围时，
+该 ResourceQuota 只能跟踪（和限制）以下资源：
+
+* `pods`
+* `cpu`
+* `memory`
+* `ephemeral-storage`
+* `limits.cpu`
+* `limits.memory`
+* `limits.ephemeral-storage`
+* `requests.cpu`
+* `requests.memory`
+* `requests.ephemeral-storage`
+
+<!--
+#### Example {#quota-scope-priorityclass-example}
+
+This example creates a ResourceQuota matches it with pods at specific priorities. The example
+works as follows:
+-->
+#### 示例 {#quota-scope-priorityclass-example}
+
+本示例创建一个 ResourceQuota 并将其与具有特定优先级的 Pod 进行匹配，其工作方式如下：
+
+<!--
+- Pods in the cluster have one of the three [PriorityClasses](/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass), "low", "medium", "high".
+  - If you want to try this out, use a testing cluster and set up those three PriorityClasses before you continue.
+- One quota object is created for each priority.
+-->
+- 集群中的 Pod 可取三个 [PriorityClass](/zh-cn/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass)
+  之一，即 "low"、"medium"、"high"。
+  - 如果你希望自己尝试，请使用测试集群并在继续操作之前先设置这三个 PriorityClass。
+- 为每个优先级创建一个配额对象。
+
+<!--
+Inspect this set of ResourceQuotas:
+-->
+检查以下这组 ResourceQuota：
+
+{{% code_sample file="policy/quota.yaml" %}}
+
+<!--
+Apply the YAML using `kubectl create`.
+-->
+使用 `kubectl create` 命令应用此 YAML。
+
+```shell
+kubectl create -f https://k8s.io/examples/policy/quota.yaml
+```
+
+```
+resourcequota/pods-high created
+resourcequota/pods-medium created
+resourcequota/pods-low created
+```
+
+<!--
+Verify that `Used` quota is `0` using `kubectl describe quota`.
+-->
+使用 `kubectl describe quota` 操作验证配额的 `Used` 值为 `0`。
+
+```shell
+kubectl describe quota
+```
+
+```
+Name:       pods-high
+Namespace:  default
+Resource    Used  Hard
+--------    ----  ----
+cpu         0     1k
+memory      0     200Gi
+pods        0     10
+
+
+Name:       pods-low
+Namespace:  default
+Resource    Used  Hard
+--------    ----  ----
+cpu         0     5
+memory      0     10Gi
+pods        0     10
+
+
+Name:       pods-medium
+Namespace:  default
+Resource    Used  Hard
+--------    ----  ----
+cpu         0     10
+memory      0     20Gi
+pods        0     10
+```
+
+<!--
+Create a pod with priority "high".
+-->
+创建优先级为 "high" 的 Pod。
+
+{{% code_sample file="policy/high-priority-pod.yaml" %}}
+
+<!--
+To create the Pod:
+-->
+创建该 Pod：
+
+```shell
+kubectl create -f https://k8s.io/examples/policy/high-priority-pod.yaml
+
+```
+
+<!--
+Verify that "Used" stats for "high" priority quota, `pods-high`, has changed and that
+the other two quotas are unchanged.
+-->
+确认 "high" 优先级配额 `pods-high` 的 "Used" 统计信息已更改，并且其他两个配额未更改。
+
+```shell
+kubectl describe quota
+```
+
+```
+Name:       pods-high
+Namespace:  default
+Resource    Used  Hard
+--------    ----  ----
+cpu         500m  1k
+memory      10Gi  200Gi
+pods        1     10
+
+
+Name:       pods-low
+Namespace:  default
+Resource    Used  Hard
+--------    ----  ----
+cpu         0     5
+memory      0     10Gi
+pods        0     10
+
+
+Name:       pods-medium
+Namespace:  default
+Resource    Used  Hard
+--------    ----  ----
+cpu         0     10
+memory      0     20Gi
+pods        0     10
+```
+
+<!--
+#### Limiting PriorityClass consumption by default
+-->
+#### 默认情况下限制 PriorityClass 的消耗  {#limit-priority-class-consumption-by-default}
+
+<!--
 It may be desired that pods at a particular priority, such as "cluster-services",
 should be allowed in a namespace, if and only if, a matching quota object exists.
 -->
-## 默认情况下限制特定优先级的资源消耗  {#limit-priority-class-consumption-by-default}
-
 有时候可能希望当且仅当某名字空间中存在匹配的配额对象时，才可以创建特定优先级
 （例如 "cluster-services"）的 Pod。
 
@@ -1350,7 +1172,7 @@ will be able to consume these priority classes by default.
 To enforce this, `kube-apiserver` flag `--admission-control-config-file` should be
 used to pass path to the following configuration file:
 -->
-要实现此目的，应设置 `kube-apiserver` 的标志 `--admission-control-config-file` 
+要实现此目的，应设置 `kube-apiserver` 的标志 `--admission-control-config-file`
 指向如下配置文件：
 
 ```yaml
@@ -1405,6 +1227,54 @@ and it is to be created in a namespace other than `kube-system`.
 -->
 如果 Pod 的 `priorityClassName` 设置为 `cluster-services`，但要被创建到
 `kube-system` 之外的别的名字空间，则 Pod 创建请求也被拒绝。
+
+<!--
+### VolumeAttributesClass scope {#quota-scope-volume-attributes-class}
+-->
+### VolumeAttributesClass 作用域  {#quota-scope-volume-attributes-class}
+
+{{< feature-state feature_gate_name="VolumeAttributesClass" >}}
+
+<!--
+This scope only tracks quota consumed by PersistentVolumeClaims.
+
+PersistentVolumeClaims can be created with a specific
+[VolumeAttributesClass](/docs/concepts/storage/volume-attributes-classes/), and might be modified after creation.
+You can control a PVC's consumption of storage resources based on the associated
+VolumeAttributesClasses, by using the `scopeSelector` field in the quota spec.
+
+The PVC references the associated VolumeAttributesClass by the following fields:
+-->
+此作用域仅跟踪 PersistentVolumeClaim 所消耗的配额。
+
+PersistentVolumeClaim（PVC）可以在创建时指定一个特定的
+[VolumeAttributesClass](/zh-cn/docs/concepts/storage/volume-attributes-classes/)，
+并且在创建后也可以进行修改。
+你可以通过在配额规约中使用 `scopeSelector` 字段，
+基于关联的 VolumeAttributesClass 来控制 PVC 对存储资源的消耗。
+
+PVC 通过以下字段引用关联的 VolumeAttributesClass：
+
+* `spec.volumeAttributesClassName`
+* `status.currentVolumeAttributesClassName`
+* `status.modifyVolumeStatus.targetVolumeAttributesClassName`
+
+<!--
+A relevant ResourceQuota is matched and consumed only if the ResourceQuota has a `scopeSelector` that selects the PVC.
+
+When the quota is scoped for the volume attributes class using the `scopeSelector` field, the quota object is restricted to track only the following resources:
+-->
+仅当 ResourceQuota 的 `scopeSelector` 选择该 PVC 时，相关的 ResourceQuota 才会被匹配并计入消耗。
+
+当使用 `scopeSelector` 字段为卷属性类限定配额范围时，配额对象只会跟踪以下资源：
+
+* `persistentvolumeclaims`
+* `requests.storage`
+
+<!--
+Read [Limit Storage Consumption](/docs/tasks/administer-cluster/limit-storage-consumption/) to learn more about this.
+-->
+阅读[限制存储消耗](/zh-cn/docs/tasks/administer-cluster/limit-storage-consumption/)以了解更多信息。
 
 ## {{% heading "whatsnext" %}}
 

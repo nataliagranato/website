@@ -15,8 +15,8 @@ including metrics for CPU and memory.  If you deploy the Metrics API into your c
 the Kubernetes API can then query for this information, and you can use Kubernetes' access control
 mechanisms to manage permissions to do so.
 
-The [HorizontalPodAutoscaler](/docs/tasks/run-application/horizontal-pod-autoscale/)  (HPA) and
-[VerticalPodAutoscaler](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#readme) (VPA)
+The [HorizontalPodAutoscaler](/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/)  (HPA) and
+[VerticalPodAutoscaler](/docs/concepts/workloads/autoscaling/vertical-pod-autoscale/) (VPA)
 use data from the metrics API to adjust workload replicas and resources to meet customer demand.
 
 You can also view the resource metrics using the
@@ -83,7 +83,7 @@ The architecture components, from right to left in the figure, consist of the fo
   cAdvisor supports reading metrics from cgroups, which works with typical container runtimes on Linux.
   If you use a container runtime that uses another resource isolation mechanism, for example
   virtualization, then that container runtime must support
-  [CRI Container Metrics](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-node/cri-container-stats.md)
+  [CRI Container Metrics](https://github.com/kubernetes/community/blob/main/contributors/devel/sig-node/cri-container-stats.md)
   in order for metrics to be available to the kubelet.
   {{< /note >}}
 

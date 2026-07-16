@@ -153,6 +153,14 @@ enabled and a container runtime that supports the `RuntimeConfig` CRI RPC,
 the kubelet automatically detects the appropriate cgroup driver from the runtime,
 and ignores the `cgroupDriver` setting within the kubelet configuration.
 
+However, older versions of container runtimes (specifically,
+containerd 1.y and below) do not support the `RuntimeConfig` CRI RPC, and
+may not respond correctly to this query, and thus the Kubelet falls back to using the
+value in its own `--cgroup-driver` flag.
+
+In Kubernetes 1.38, this fallback behavior will be dropped, and older versions
+of containerd will fail with newer kubelets.
+
 {{< caution >}}
 Changing the cgroup driver of a Node that has joined a cluster is a sensitive operation.
 If the kubelet has created Pods using the semantics of one cgroup driver, changing the container
@@ -171,12 +179,11 @@ follow [configuring a cgroup driver](/docs/tasks/administer-cluster/kubeadm/conf
 
 ## CRI version support {#cri-versions}
 
-Your container runtime must support at least v1alpha2 of the container runtime interface.
+Your container runtime must support v1 of the container runtime interface.
 
 Kubernetes [starting v1.26](/blog/2022/11/18/upcoming-changes-in-kubernetes-1-26/#cri-api-removal)
-_only works_ with v1 of the CRI API. Earlier versions default
-to v1 version, however if a container runtime does not support the v1 API, the kubelet falls back to
-using the (deprecated) v1alpha2 API instead.
+_only works_ with v1 of the CRI API. If a container runtime does not support the v1 API,
+the kubelet will not register as a node.
 
 ## Container runtimes
 
@@ -204,12 +211,24 @@ On Windows the default CRI endpoint is `npipe://./pipe/containerd-containerd`.
 
 #### Configuring the `systemd` cgroup driver {#containerd-systemd}
 
-To use the `systemd` cgroup driver in `/etc/containerd/config.toml` with `runc`, set
+To use the `systemd` cgroup driver in `/etc/containerd/config.toml` with `runc`,
+set the following config based on your Containerd version
+
+Containerd versions 1.x:
 
 ```
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
   ...
   [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+    SystemdCgroup = true
+```
+
+Containerd versions 2.x:
+
+```
+[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc]
+  ...
+  [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc.options]
     SystemdCgroup = true
 ```
 

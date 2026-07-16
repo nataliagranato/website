@@ -64,7 +64,7 @@ Kubernetes reviews only the following API request attributes:
  * **API request verb** - API verbs like `get`, `list`, `create`, `update`, `patch`, `watch`, `delete`, and `deletecollection` are used for resource requests. To determine the request verb for a resource API endpoint, see [request verbs and authorization](/docs/reference/access-authn-authz/authorization/#determine-the-request-verb).
  * **HTTP request verb** - Lowercased HTTP methods like `get`, `post`, `put`, and `delete` are used for non-resource requests.
  * **Resource** - The ID or name of the resource that is being accessed (for resource requests only) -- For resource requests using `get`, `update`, `patch`, and `delete` verbs, you must provide the resource name.
- * **Subresource** - The subresource that is being accessed (for resource requests only).
+ * **Subresource** - The subresource that is being accessed (for resource requests only). This can be a standard subresource (for example, `status` or `scale`) or a synthetic subresource used for fine-grained authorization.
  * **Namespace** - The namespace of the object that is being accessed (for namespaced resource requests only).
  * **API group** - The {{< glossary_tooltip text="API Group" term_id="api-group" >}} being accessed (for resource requests only). An empty string designates the _core_ [API group](/docs/reference/using-api/#api-groups).
 
@@ -104,6 +104,9 @@ Kubernetes sometimes checks authorization for additional permissions using speci
   * **approve** verb for CertificateSigningRequests, and **update** for revisions to existing approvals
 * [RBAC](/docs/reference/access-authn-authz/rbac/#privilege-escalation-prevention-and-bootstrapping)
   * **bind** and **escalate** verbs on `roles` and `clusterroles` resources in the `rbac.authorization.k8s.io` API group.
+* [Dynamic Resource Allocation (DRA)](/docs/concepts/scheduling-eviction/dynamic-resource-allocation/)
+  * Synthetic subresources such as `resourceclaims/binding` and `resourceclaims/driver` in the `resource.k8s.io` API group.
+  * Node-aware verbs such as `associated-node:update`, `associated-node:patch`, `arbitrary-node:update`, and `arbitrary-node:patch` for DRA driver `resourceclaims/status` updates.
 
 ## Authorization context
 
@@ -219,11 +222,23 @@ authorizers:
       # Same as setting `--authorization-webhook-cache-authorized-ttl` flag
       # Default: 5m0s
       authorizedTTL: 30s
+      # If set to false, 'authorized' responses from the webhook are not cached
+      # and the specified authorizedTTL is ignored/has no effect.
+      # Same as setting `--authorization-webhook-cache-authorized-ttl` flag to `0`.
+      # Note: Setting authorizedTTL to `0` results in its default value being used.
+      # Default: true
+      cacheAuthorizedRequests: true
       # The duration to cache 'unauthorized' responses from the webhook
       # authorizer.
       # Same as setting `--authorization-webhook-cache-unauthorized-ttl` flag
       # Default: 30s
       unauthorizedTTL: 30s
+      # If set to false, 'unauthorized' responses from the webhook are not cached
+      # and the specified unauthorizedTTL is ignored/has no effect.
+      # Same as setting `--authorization-webhook-cache-unauthorized-ttl` flag to `0`.
+      # Note: Setting unauthorizedTTL to `0` results in its default value being used.
+      # Default: true
+      cacheUnauthorizedRequests: true
       # Timeout for the webhook request
       # Maximum allowed is 30s.
       # Required, with no default.

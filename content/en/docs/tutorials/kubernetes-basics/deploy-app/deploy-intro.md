@@ -8,6 +8,18 @@ weight: 10
 * Learn about application Deployments.
 * Deploy your first app on Kubernetes with kubectl.
 
+
+## {{% heading "prerequisites" %}}
+
+The shell commands in this tutorial use POSIX shell syntax, which is supported by
+the default shells on most Linux and macOS systems (for example, bash, zsh, or sh).
+Windows users must use a POSIX-compatible shell such as
+[Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install)
+or [Git Bash](https://gitforwindows.org/) to run the commands as written.
+Commands that use `export`, `$()`, and similar constructs are **not** compatible
+with PowerShell or the Windows Command Prompt.
+
+
 ## Kubernetes Deployments
 
 {{% alert %}}
@@ -61,7 +73,7 @@ discuss how you can scale and update your Deployments.
 For your first Deployment, you'll use a hello-node application packaged in a Docker
 container that uses NGINX to echo back all the requests. (If you didn't already try
 creating a hello-node application and deploying it using a container, you can do
-that first by following the instructions from the [Hello Minikube tutorial](/docs/tutorials/hello-minikube/).
+that first by following the instructions from the [Hello Minikube tutorial](/docs/tutorials/hello-minikube/).)
 
 You will need to have installed kubectl as well. If you need to install it, visit
 [install tools](/docs/tasks/tools/#kubectl).

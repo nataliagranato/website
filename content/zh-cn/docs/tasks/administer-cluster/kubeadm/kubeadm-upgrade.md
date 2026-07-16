@@ -19,10 +19,10 @@ This page explains how to upgrade a Kubernetes cluster created with kubeadm from
 {{< skew currentVersion >}}.x to {{< skew currentVersion >}}.y (where `y > x`). Skipping MINOR versions
 when upgrading is unsupported. For more details, please visit [Version Skew Policy](/releases/version-skew-policy/).
 -->
-本页介绍如何将 `kubeadm` 创建的 Kubernetes 集群从 {{< skew currentVersionAddMinor -1 >}}.x 版本
-升级到 {{< skew currentVersion >}}.x 版本以及从 {{< skew currentVersion >}}.x
-升级到 {{< skew currentVersion >}}.y（其中 `y > x`）。略过次版本号的升级是
-不被支持的。更多详情请访问[版本偏差策略](/zh-cn/releases/version-skew-policy/)。
+本页介绍如何将 `kubeadm` 创建的 Kubernetes 集群从 {{< skew currentVersionAddMinor -1 >}}.x
+版本升级到 {{< skew currentVersion >}}.x 版本以及从 {{< skew currentVersion >}}.x
+升级到 {{< skew currentVersion >}}.y（其中 `y > x`）。略过次版本号的升级是不被支持的。
+更多详情请访问[版本偏差策略](/zh-cn/releases/version-skew-policy/)。
 
 <!--
 To see information about upgrading clusters created using older versions of kubeadm,
@@ -44,7 +44,7 @@ please refer to following pages instead:
 <!--
 The Kubernetes project recommends upgrading to the latest patch releases promptly, and
 to ensure that you are running a supported minor release of Kubernetes.
-Following this recommendation helps you to to stay secure.
+Following this recommendation helps you to stay secure.
 -->
 Kubernetes 项目建议立即升级到最新的补丁版本，并确保你运行的是受支持的 Kubernetes 次要版本。
 遵循此建议可帮助你保持安全。
@@ -96,8 +96,8 @@ The upgrade workflow at high level is the following:
 - All containers are restarted after upgrade, because the container spec hash value is changed.
 -->
 - 下述说明了在升级过程中何时腾空每个节点。如果你正在对任何 kubelet 进行小版本升级，
-  你需要先腾空待升级的节点（或多个节点）。对于控制面节点，其上可能运行着 CoreDNS Pod
-  或者其它非常重要的负载。更多信息见[腾空节点](/zh-cn/docs/tasks/administer-cluster/safely-drain-node/)。
+  你需要先腾空待升级的节点（或多个节点）。对于控制平面节点，其上可能运行着 CoreDNS Pod
+  或者其他非常重要的负载。更多信息见[腾空节点](/zh-cn/docs/tasks/administer-cluster/safely-drain-node/)。
 - Kubernetes 项目推荐你使用版本匹配的 kubelet 和 kubeadm。
   但你也可以使用比 kubeadm 版本更低的 kubelet 版本，前提是该版本仍处于支持的版本范围内。
   欲了解更多信息，请访问 [kubeadm 与 kubelet 的版本差异](/zh-cn/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#kubeadm-s-skew-against-the-kubelet)。
@@ -132,7 +132,7 @@ apply` command. This permits to complete in-flight requests and close existing
 connections, and minimizes the consequence of the etcd downtime. This can be
 done as follows on control plane nodes:
 -->
-### 升级 etcd 时的注意事项
+### 升级 etcd 时的注意事项   {#considerations-when-upgrading-etcd}
 
 由于 `kube-apiserver` 静态 Pod 始终在运行（即使你已经执行了腾空节点的操作），
 因此当你执行包括 etcd 升级在内的 kubeadm 升级时，对服务器正在进行的请求将停滞，
@@ -142,9 +142,9 @@ done as follows on control plane nodes:
 
 <!--
 ```shell
-# trigger a graceful kube-apiserver shutdown
-# wait a little bit to permit completing in-flight requests
-# execute a kubeadm upgrade command
+killall -s SIGTERM kube-apiserver # trigger a graceful kube-apiserver shutdown
+sleep 20 # wait a little bit to permit completing in-flight requests
+kubeadm upgrade ... # execute a kubeadm upgrade command
 -->
 ```shell
 killall -s SIGTERM kube-apiserver # 触发 kube-apiserver 体面关闭
@@ -202,16 +202,35 @@ sudo apt-cache madison kubeadm
 {{% tab name="CentOS、RHEL 或 Fedora" %}}
 
 <!--
+For systems with DNF:
 ```shell
 # Find the latest {{< skew currentVersion >}} version in the list.
 # It should look like {{< skew currentVersion >}}.x-*, where x is the latest patch.
 sudo yum list --showduplicates kubeadm --disableexcludes=kubernetes
 ```
 -->
+对于使用 DNF 的系统：
+
 ```shell
 # 在列表中查找最新的 {{< skew currentVersion >}} 版本
 # 它看起来应该是 {{< skew currentVersion >}}.x-*，其中 x 是最新的补丁版本
 sudo yum list --showduplicates kubeadm --disableexcludes=kubernetes
+```
+
+<!--
+For systems with DNF5:
+```shell
+# Find the latest {{< skew currentVersion >}} version in the list.
+# It should look like {{< skew currentVersion >}}.x-*, where x is the latest patch.
+sudo yum list --showduplicates kubeadm --setopt=disable_excludes=kubernetes
+```
+-->
+对于使用 DNF5 的系统：
+
+```shell
+# 在列表中查找最新的 {{< skew currentVersion >}} 版本
+# 它看起来应该是 {{< skew currentVersion >}}.x-*，其中 x 是最新的补丁版本
+sudo yum list --showduplicates kubeadm --setopt=disable_excludes=kubernetes
 ```
 
 {{% /tab %}}
@@ -232,8 +251,8 @@ If you don't see the version you expect to upgrade to, [verify if the Kubernetes
 The upgrade procedure on control plane nodes should be executed one node at a time.
 Pick a control plane node that you wish to upgrade first. It must have the `/etc/kubernetes/admin.conf` file.
 -->
-控制面节点上的升级过程应该每次处理一个节点。
-首先选择一个要先行升级的控制面节点。该节点上必须拥有
+控制平面节点上的升级过程应该每次处理一个节点。
+首先选择一个要先行升级的控制平面节点。该节点上必须拥有
 `/etc/kubernetes/admin.conf` 文件。
 
 <!--
@@ -244,7 +263,7 @@ Pick a control plane node that you wish to upgrade first. It must have the `/etc
 <!--
 **For the first control plane node**
 -->
-**对于第一个控制面节点**
+**对于第一个控制平面节点**
 
 <!--
 1. Upgrade kubeadm:
@@ -273,14 +292,31 @@ Pick a control plane node that you wish to upgrade first. It must have the `/etc
    {{% tab name="CentOS、RHEL 或 Fedora" %}}
 
    <!--
+   For systems with DNF:
    ```shell
    # replace x in {{< skew currentVersion >}}.x-* with the latest patch version
    sudo yum install -y kubeadm-'{{< skew currentVersion >}}.x-*' --disableexcludes=kubernetes
    ```
    -->
+   对于使用 DNF 的系统：
+
    ```shell
    # 用最新的补丁版本号替换 {{< skew currentVersion >}}.x-* 中的 x
    sudo yum install -y kubeadm-'{{< skew currentVersion >}}.x-*' --disableexcludes=kubernetes
+   ```
+   
+   <!--
+   For systems with DNF5:
+   ```shell
+   # replace x in {{< skew currentVersion >}}.x-* with the latest patch version
+   sudo yum install -y kubeadm-'{{< skew currentVersion >}}.x-*' --setopt=disable_excludes=kubernetes
+   ```
+   -->
+   对于使用 DNF5 的系统：
+
+   ```shell
+   # 用最新的补丁版本号替换 {{< skew currentVersion >}}.x-* 中的 x
+   sudo yum install -y kubeadm-'{{< skew currentVersion >}}.x-*' --setopt=disable_excludes=kubernetes
    ```
 
    {{% /tab %}}
@@ -350,7 +386,6 @@ Pick a control plane node that you wish to upgrade first. It must have the `/etc
    ```
 
    {{< note >}}
-
    <!--
    For versions earlier than v1.28, kubeadm defaulted to a mode that upgrades the addons (including CoreDNS and kube-proxy)
    immediately during `kubeadm upgrade apply`, regardless of whether there are other control plane instances that have not
@@ -390,12 +425,12 @@ Pick a control plane node that you wish to upgrade first. It must have the `/etc
 <!--
 **For the other control plane nodes**
 -->
-**对于其它控制面节点**
+**对于其他控制平面节点**
 
 <!--
 Same as the first control plane node but use:
 -->
-与第一个控制面节点相同，但是使用：
+与第一个控制平面节点相同，但是使用：
 
 ```shell
 sudo kubeadm upgrade node
@@ -432,7 +467,7 @@ kubectl drain <node-to-drain> --ignore-daemonsets
 ```
 -->
 ```shell
-# 将 <node-to-drain> 替换为你要腾空的控制面节点名称
+# 将 <node-to-drain> 替换为你要腾空的控制平面节点名称
 kubectl drain <node-to-drain> --ignore-daemonsets
 ```
 
@@ -440,6 +475,22 @@ kubectl drain <node-to-drain> --ignore-daemonsets
 ### Upgrade kubelet and kubectl
 -->
 ### 升级 kubelet 和 kubectl   {#upgrade-kubelet-and-kubectl}
+
+{{< note >}}
+<!--
+On Linux nodes, the kubelet defaults to supporting only cgroups v2.
+For Kubernetes {{< skew currentVersion >}} the `FailCgroupV1` kubelet configuration option is set to `true` by default.
+
+To learn more, refer to the [Kubernetes cgroup v1 deprecation documentation](/docs/concepts/architecture/cgroups/#deprecation-of-cgroup-v1).
+-->
+在 Linux 节点上，kubelet 默认仅支持 CGroup v2。
+
+对于 Kubernetes {{< skew currentVersion >}}，kubelet
+配置选项 `FailCgroupV1` 默认设置为 `true`。
+
+要了解更多信息，请参阅
+[Kubernetes CGroup v1 弃用文档](/zh-cn/docs/concepts/architecture/cgroups/#deprecation-of-cgroup-v1)。
+{{</ note >}}
 
 <!--
 1. Upgrade the kubelet and kubectl:
@@ -468,14 +519,31 @@ kubectl drain <node-to-drain> --ignore-daemonsets
    {{% tab name="CentOS、RHEL 或 Fedora" %}}
 
    <!--
+   For systems with DNF:
    ```shell
    # replace x in {{< skew currentVersion >}}.x-* with the latest patch version
    sudo yum install -y kubelet-'{{< skew currentVersion >}}.x-*' kubectl-'{{< skew currentVersion >}}.x-*' --disableexcludes=kubernetes
    ```
    -->
+   对于使用 DNF 的系统：
+
    ```shell
    # 用最新的补丁版本号替换 {{< skew currentVersion >}}.x-* 中的 x
    sudo yum install -y kubelet-'{{< skew currentVersion >}}.x-*' kubectl-'{{< skew currentVersion >}}.x-*' --disableexcludes=kubernetes
+   ```
+   
+   <!--
+   For systems with DNF5:   
+   ```shell
+   # replace x in {{< skew currentVersion >}}.x-* with the latest patch version
+   sudo yum install -y kubelet-'{{< skew currentVersion >}}.x-*' kubectl-'{{< skew currentVersion >}}.x-*' --setopt=disable_excludes=kubernetes
+   ```
+   -->
+
+   对于使用 DNF5 的系统：
+   ```shell
+   # 用最新的补丁版本号替换 {{< skew currentVersion >}}.x-* 中的 x
+   sudo yum install -y kubelet-'{{< skew currentVersion >}}.x-*' kubectl-'{{< skew currentVersion >}}.x-*' --setopt=disable_excludes=kubernetes
    ```
 
    {{% /tab %}}
@@ -587,7 +655,7 @@ During upgrade kubeadm writes the following backup folders under `/etc/kubernete
 In case of an etcd upgrade failure and if the automatic rollback does not work, the contents of this folder
 can be manually restored in `/var/lib/etcd`. In case external etcd is used this backup folder will be empty.
 -->
-`kubeadm-backup-etcd` 包含当前控制面节点本地 etcd 成员数据的备份。
+`kubeadm-backup-etcd` 包含当前控制平面节点本地 etcd 成员数据的备份。
 如果 etcd 升级失败并且自动回滚也无法修复，则可以将此文件夹中的内容复制到
 `/var/lib/etcd` 进行手工修复。如果使用的是外部的 etcd，则此备份文件夹为空。
 
@@ -597,7 +665,7 @@ In case of a upgrade failure and if the automatic rollback does not work, the co
 manually restored in `/etc/kubernetes/manifests`. If for some reason there is no difference between a pre-upgrade
 and post-upgrade manifest file for a certain component, a backup file for it will not be written.
 -->
-`kubeadm-backup-manifests` 包含当前控制面节点的静态 Pod 清单文件的备份版本。
+`kubeadm-backup-manifests` 包含当前控制平面节点的静态 Pod 清单文件的备份版本。
 如果升级失败并且无法自动回滚，则此文件夹中的内容可以复制到
 `/etc/kubernetes/manifests` 目录实现手工恢复。
 如果由于某些原因，在升级前后某个组件的清单未发生变化，则 kubeadm 也不会为之生成备份版本。
@@ -635,18 +703,18 @@ these backup files will need to be cleared manually.
 - 检查你的集群是否处于可升级状态:
   - API 服务器是可访问的
   - 所有节点处于 `Ready` 状态
-  - 控制面是健康的
+  - 控制平面是健康的
 - 强制执行版本偏差策略。
-- 确保控制面的镜像是可用的或可拉取到服务器上。
+- 确保控制平面的镜像是可用的或可拉取到服务器上。
 - 如果组件配置要求版本升级，则生成替代配置与/或使用用户提供的覆盖版本配置。
-- 升级控制面组件或回滚（如果其中任何一个组件无法启动）。
+- 升级控制平面组件或回滚（如果其中任何一个组件无法启动）。
 - 应用新的 `CoreDNS` 和 `kube-proxy` 清单，并强制创建所有必需的 RBAC 规则。
 - 如果旧文件在 180 天后过期，将创建 API 服务器的新证书和密钥文件并备份旧文件。
 
 <!--
 `kubeadm upgrade node` does the following on additional control plane nodes:
 -->
-`kubeadm upgrade node` 在其他控制平节点上执行以下操作：
+`kubeadm upgrade node` 在其他控制平面节点上执行以下操作：
 
 <!--
 - Fetches the kubeadm `ClusterConfiguration` from the cluster.

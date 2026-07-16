@@ -163,7 +163,7 @@ way to do that is with the objects that configure classification and
 handling, discussed below. Another way is to disable Priority and
 Fairness on server B entirely, using the techniques discussed above. A
 third way, which is the simplest to use when server B is not
-`kube-apisever`, is to build server B with Priority and Fairness
+`kube-apiserver`, is to build server B with Priority and Fairness
 disabled in the code.
 -->
 当原始请求被确定为属于某个特定优先级别时，将辅助请求分类为更高的优先级别是一个可行的解决方案。
@@ -1490,11 +1490,11 @@ FlowSchema 将这些列表调用与其他请求隔离开来。
 - You can visit flow control [reference doc](/docs/reference/debug-cluster/flow-control/) to learn more about troubleshooting.
 - For background information on design details for API priority and fairness, see
   the [enhancement proposal](https://github.com/kubernetes/enhancements/tree/master/keps/sig-api-machinery/1040-priority-and-fairness).
-- You can make suggestions and feature requests via [SIG API Machinery](https://github.com/kubernetes/community/tree/master/sig-api-machinery)
+- You can make suggestions and feature requests via [SIG API Machinery](https://github.com/kubernetes/community/tree/main/sig-api-machinery)
   or the feature's [slack channel](https://kubernetes.slack.com/messages/api-priority-and-fairness).
 -->
 - 你可以查阅流控[参考文档](/zh-cn/docs/reference/debug-cluster/flow-control/)了解有关故障排查的更多信息。
 - 有关 API 优先级和公平性的设计细节的背景信息，
   请参阅[增强提案](https://github.com/kubernetes/enhancements/tree/master/keps/sig-api-machinery/1040-priority-and-fairness)。
-- 你可以通过 [SIG API Machinery](https://github.com/kubernetes/community/tree/master/sig-api-machinery/)
+- 你可以通过 [SIG API Machinery](https://github.com/kubernetes/community/tree/main/sig-api-machinery)
   或特性的 [Slack 频道](https://kubernetes.slack.com/messages/api-priority-and-fairness/)提出建议和特性请求。
