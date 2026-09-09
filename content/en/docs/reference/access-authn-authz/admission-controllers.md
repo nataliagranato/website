@@ -47,18 +47,19 @@ administrator.
 
 ### Admission control extension points
 
-Within the full [list](#what-does-each-admission-controller-do), there are three
+Within the full [list](#what-does-each-admission-controller-do), there are four
 special controllers:
 [MutatingAdmissionWebhook](#mutatingadmissionwebhook),
+[MutatingAdmissionPolicy](#mutatingadmissionpolicy),
 [ValidatingAdmissionWebhook](#validatingadmissionwebhook), and
 [ValidatingAdmissionPolicy](#validatingadmissionpolicy).
 The two webhook controllers execute the mutating and validating (respectively)
 [admission control webhooks](/docs/reference/access-authn-authz/extensible-admission-controllers/#admission-webhooks)
 which are configured in the API. ValidatingAdmissionPolicy provides a way to embed
 declarative validation code within the API, without relying on any external HTTP
-callouts.
+callouts; MutatingAdmissionPolicy does the same for declarative mutations.
 
-You can use these three admission controllers to customize cluster behavior at
+You can use these four admission controllers to customize cluster behavior at
 admission time.
 
 ### Admission control phases
@@ -127,7 +128,7 @@ kube-apiserver -h | grep enable-admission-plugins
 In Kubernetes {{< skew currentVersion >}}, the default ones are:
 
 ```shell
-CertificateApproval, CertificateSigning, CertificateSubjectRestriction, DefaultIngressClass, DefaultStorageClass, DefaultTolerationSeconds, LimitRanger, MutatingAdmissionWebhook, NamespaceLifecycle, PersistentVolumeClaimResize, PodSecurity, Priority, ResourceQuota, RuntimeClass, ServiceAccount, StorageObjectInUseProtection, TaintNodesByCondition, ValidatingAdmissionPolicy, ValidatingAdmissionWebhook
+CertificateApproval, CertificateSigning, CertificateSubjectRestriction, DefaultIngressClass, DefaultStorageClass, DefaultTolerationSeconds, LimitRanger, MutatingAdmissionPolicy, MutatingAdmissionWebhook, NamespaceLifecycle, PersistentVolumeClaimResize, PodSecurity, Priority, ResourceQuota, RuntimeClass, ServiceAccount, StorageObjectInUseProtection, TaintNodesByCondition, ValidatingAdmissionPolicy, ValidatingAdmissionWebhook
 ```
 
 ## What does each admission controller do?
@@ -516,6 +517,18 @@ See the [LimitRange API reference](/docs/reference/kubernetes-api/policy-resourc
 and the [example of LimitRange](/docs/tasks/administer-cluster/manage-resources/memory-default-namespace/)
 for more details.
 
+### MutatingAdmissionPolicy {#mutatingadmissionpolicy}
+
+**Type**: Mutating.
+
+[This admission controller](/docs/reference/access-authn-authz/mutating-admission-policy/) implements
+declarative, in-process mutations for incoming matched requests, defined as CEL expressions that
+modify matched objects using apply configurations or JSON patches.
+It provides a lower-latency alternative to
+[MutatingAdmissionWebhook](#mutatingadmissionwebhook), without relying on any external HTTP
+callouts.
+If any of the MutatingAdmissionPolicies fails, the request fails.
+
 ### MutatingAdmissionWebhook {#mutatingadmissionwebhook}
 
 **Type**: Mutating.
@@ -808,7 +821,7 @@ which can be surfaced to running containers using the
 [Downward API](/docs/concepts/workloads/pods/downward-api/).
 The labels available as a result of this controller are the
 [topology.kubernetes.io/region](/docs/reference/labels-annotations-taints/#topologykubernetesioregion) and
-[topology.kuberentes.io/zone](/docs/reference/labels-annotations-taints/#topologykubernetesiozone) labels.
+[topology.kubernetes.io/zone](/docs/reference/labels-annotations-taints/#topologykubernetesiozone) labels.
 
 {{<note>}}
 If any mutating admission webhook adds or modifies labels of the `pods/binding` subresource,
